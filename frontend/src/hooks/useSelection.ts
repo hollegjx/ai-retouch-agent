@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 
-import { sessionsApi, type SelectInput, type Selection } from '@/api/sessions'
-import { errorMessage } from '@/hooks/useAuth'
+import { sessionsApi } from '@/service/api/sessions'
+import type { SelectInput, Selection } from '@/types/sessions'
+import { errorMessage } from '@/utils/errors'
 import { BRUSH_RADIUS } from '@/lib/brush'
 import { createSelectionHistory, inputsOf, type SelectionEntry } from '@/lib/selectionHistory'
 import { toast } from '@/stores/toasts'
@@ -27,15 +28,18 @@ export function useSelection(sessionId: string, revision: number) {
   const setSelection = useEditorUi((state) => state.setSelection)
   const dropStaleSelection = useEditorUi((state) => state.dropStaleSelection)
   const selection = useEditorUi((state) => state.selection)
-  const history = useRef(createSelectionHistory())
+  // oxlint-disable-next-line react-hooks/exhaustive-deps -- 切换会话或画布修订时创建独立的选区撤销栈。
+  const history = useMemo(() => createSelectionHistory(), [sessionId, revision])
   const [, bump] = useState(0)
   const touch = () => bump((value) => value + 1)
 
   useEffect(() => {
     dropStaleSelection(revision)
-    history.current.reset()
-    touch()
   }, [revision, dropStaleSelection])
+
+  useEffect(() => {
+    setSelection(null)
+  }, [sessionId, setSelection])
 
   const selectMode = useEditorUi((state) => state.selectMode)
 
@@ -48,7 +52,7 @@ export function useSelection(sessionId: string, revision: number) {
     mutationFn: (input: SelectInput) => sessionsApi.select(sessionId, input),
     onSuccess: (body, input) => {
       const entry = entryOf(input)
-      if (entry) history.current.commit(entry)
+      if (entry) history.commit(entry)
       setSelection(toCanvas(body))
       touch()
     },
@@ -58,7 +62,7 @@ export function useSelection(sessionId: string, revision: number) {
   const clear = useMutation({
     mutationFn: () => sessionsApi.clearSelection(sessionId),
     onSuccess: () => {
-      history.current.clear()
+      history.clear()
       setSelection(null)
       touch()
     },
@@ -89,8 +93,8 @@ export function useSelection(sessionId: string, revision: number) {
   return {
     selection,
     busy,
-    canUndo: history.current.canUndo(),
-    canRedo: history.current.canRedo(),
+    canUndo: history.canUndo(),
+    canRedo: history.canRedo(),
     addPoint: (x: number, y: number) =>
       select.mutate({
         revision,
@@ -101,11 +105,11 @@ export function useSelection(sessionId: string, revision: number) {
       select.mutate({ revision, strokes: [points], radius: BRUSH_RADIUS }),
     clear: () => clear.mutate(),
     undo: () => {
-      const next = history.current.undo()
+      const next = history.undo()
       if (next !== null) replay.mutate(next)
     },
     redo: () => {
-      const next = history.current.redo()
+      const next = history.redo()
       if (next !== null) replay.mutate(next)
     },
   }

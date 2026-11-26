@@ -5,13 +5,32 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import storage
+from app.exceptions import BusinessError, ErrorCode
 from app.models import Asset, EditSession, SessionAsset
 from app.models.asset import AssetKind, AssetSource
+from app.schemas.asset import AssetOut, LibraryGroupOut
 from app.services.images import ImageMeta, probe
 
 # 遮罩、抠图层是会话内部产物，创作页历史素材不单独摊开
 _WORKING = {AssetKind.MASK, AssetKind.SUBJECT, AssetKind.BACKGROUND}
 ORPHAN_TITLE = "未归入会话"
+
+
+class AssetNotFound(BusinessError):
+    status_code = 404
+    code = ErrorCode.NOT_FOUND_ERROR
+    message = "素材不存在"
+
+
+async def require_for_user(session: AsyncSession, user_id: uuid.UUID, asset_id: uuid.UUID) -> Asset:
+    asset = await get_for_user(session, user_id, asset_id)
+    if asset is None:
+        raise AssetNotFound
+    return asset
+
+
+async def upload(session: AsyncSession, user_id: uuid.UUID, data: bytes) -> Asset:
+    return await create_from_bytes(session, user_id, data, AssetKind.ORIGINAL, AssetSource.UPLOAD)
 
 
 def _storage_key(user_id: uuid.UUID, asset_id: uuid.UUID, extension: str) -> str:
@@ -81,7 +100,6 @@ async def library_for_user(
         )
     )
     walls: dict[uuid.UUID, list[Asset]] = defaultdict(list)
-    attached: set[uuid.UUID] = set()
     if records:
         rows = await session.execute(
             select(SessionAsset.session_id, Asset)
@@ -91,13 +109,16 @@ async def library_for_user(
         )
         for session_id, asset in rows:
             walls[session_id].append(asset)
-            attached.add(asset.id)
 
     cover_ids = {record.current_asset_id for record in records}
-    covers = {
-        asset.id: asset
-        for asset in await session.scalars(select(Asset).where(Asset.id.in_(cover_ids)))
-    } if cover_ids else {}
+    covers = (
+        {
+            asset.id: asset
+            for asset in await session.scalars(select(Asset).where(Asset.id.in_(cover_ids)))
+        }
+        if cover_ids
+        else {}
+    )
 
     groups: list[tuple[EditSession | None, Asset, list[Asset]]] = []
     for record in records:
@@ -115,7 +136,7 @@ async def library_for_user(
             .where(
                 Asset.user_id == user_id,
                 Asset.kind.notin_(_WORKING),
-                *([Asset.id.notin_(attached)] if attached else []),
+                ~select(SessionAsset.asset_id).where(SessionAsset.asset_id == Asset.id).exists(),
             )
             .order_by(Asset.created_at.desc())
             .limit(limit)
@@ -124,3 +145,17 @@ async def library_for_user(
     if leftover:
         groups.append((None, leftover[0], leftover))
     return groups
+
+
+async def library(session: AsyncSession, user_id: uuid.UUID, limit: int) -> list[LibraryGroupOut]:
+    groups = await library_for_user(session, user_id, limit)
+    return [
+        LibraryGroupOut(
+            session_id=record.id if record else None,
+            title=record.title if record else ORPHAN_TITLE,
+            updated_at=record.updated_at if record else cover.created_at,
+            cover=AssetOut.of(cover),
+            assets=[AssetOut.of(asset) for asset in wall],
+        )
+        for record, cover, wall in groups
+    ]

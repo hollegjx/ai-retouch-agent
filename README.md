@@ -1,166 +1,46 @@
 # AI 修图智能体
 
-> 本项目为教学项目，提供完整文字教程 + 简历写法 + 面试题解 + 答疑服务，帮你提升项目能力，给简历增加亮点！
->
-> ⭐️ 加入项目系列学习：[加入编程导航](https://www.codefather.cn/vip)
+支持图片生成、画布编辑、自然语言修图与批量交付的全栈项目。后端使用 Python / FastAPI，前端使用 React / TypeScript / Konva。
 
-## 一、项目介绍
+## 功能
 
-这是一套以 **AI Agent 驱动的图片编辑** 为核心的全栈项目教程，基于 Python 3.13 + FastAPI + LangChain + LangGraph + React 19 + Konva。你只需要输入一句话，AI 就能自动规划修图步骤、调用 21 种编辑工具帮你完成专业级修图，从文生图到抠图调色、区域编辑、图层拆分，全部自动搞定。
+- 账号注册与登录、图片上传、素材库和编辑会话。
+- 文生图、候选图选择、AI 对话、编辑计划确认与任务进度。
+- 画布缩放与平移、裁剪、调色、文字、图层、选区、撤销与重做。
+- 去背景、换背景、局部编辑、扩图、超分辨率与图层拆分。
+- 营销图生成、投放尺寸转换、多图批量处理与压缩包导出。
 
-![](https://pic.yupi.icu/pine/image-20260901150955859.png)
+## 结构与约定
 
-### 为什么做这个项目？
-1）赛道火热：AI 修图和 AI 生图是目前最热门的 AI 应用方向之一，各大厂和创业公司都在布局。掌握 AI 图像处理和智能体开发，求职时非常有竞争力。
+后端按 routers、schemas、services、repositories、models 分层，耗时任务由独立 Worker 执行，依赖 PostgreSQL、Redis 和兼容 S3 的对象存储。前端按业务组织页面，接口调用集中在 service/api，通过 REST API 和 SSE 获取数据及进度。
 
-2）技术含量高：这个项目涉及的技术面很广，从后端的 LangChain 模型接入、LangGraph 智能体、异步任务队列、对象存储，到前端的 Canvas 画布引擎、图层系统、选区交互，再到 AI 模型的文生图、语义分割、图像编辑，远不是增删改查能比的。
+- 开发约定：[AGENTS.md](AGENTS.md)
+- 功能范围与验证记录：[docs/spec.md](docs/spec.md)
+- 界面风格：[docs/design.md](docs/design.md)
+- 重构记录：[docs/NOTES.md](docs/NOTES.md)
 
-3）全栈实战：一个项目同时练 Python 后端和 React 前端，后端重点在 Agent 架构和图像处理管线，前端重点在画布引擎和复杂交互，两端都有大量值得写进简历的技术点。
-
-
-### 8 大核心能力
-
-1）AI 文生图，输入提示词就能出图
-
-在创作页输入一段提示词，AI 自动生成四张候选图，以四宫格的形式展示给你挑选。整个生成过程通过 SSE 实时推送进度，不用傻等，随时知道跑到哪一步了。选中满意的图片后，直接进入编辑器开始修图。
-
-![](https://pic.yupi.icu/pine/image-20260901142856191.png)
-
-
-
-2）专业级画布编辑器
-
-基于 react-konva 搭建了一个真正能用的图片编辑器，支持画布缩放平移、图层文档管理、撤销重做，还有前后对比滑杆，一拖就能看到修图前后的效果。这不是玩具级 demo，而是对标专业修图软件的交互体验。
-
-![](https://pic.yupi.icu/pine/image-20260831153713493.png)
-
-
-
-3）自然语言驱动修图
-
-这是整个项目最酷的能力。你在对话框里输入一句话，比如“把背景换成海滩”、“提高亮度和饱和度”，AI Agent 会自动分析你的需求，规划出修图步骤，然后一步步调用工具帮你执行。不需要你去找按钮、调参数，说一句话就搞定。
-
-![](https://pic.yupi.icu/pine/image-20260831155606100.png)
-
-
-
-4）21 种编辑工具，覆盖主流修图场景
-
-项目内置了丰富的编辑工具：rembg 一键抠图、11 参调色（亮度/对比度/饱和度/色温等）、裁剪/翻转/缩放/旋转/移动等画布变换、AI 换背景、AI 扩图、超分辨率放大。手动点击工具栏可以用，Agent 也能自动调用，UI 和 Agent 共享同一套工具注册表。
-
-![](https://pic.yupi.icu/pine/image-20260831160551720.png)
-
-
-
-5）智能区域选择
-
-集成了 SAM（Segment Anything Model）点选能力，鼠标点一下就能精准选中画面中的任意物体。还支持笔刷涂抹模式，自由绘制选区。首次点击计算 embedding，后续点击只跑 decoder，响应速度是毫秒级的。
-
-![](https://pic.yupi.icu/pine/Google%20Chrome%202026-08-31%2016.09.05.png)
-
-
-
-6）局部精细编辑
-
-有了选区之后，可以做局部消除和局部替换。局部消除会用 AI inpainting 把选区内的东西抹掉，自动填补背景；局部替换可以用一句提示词描述你想换成什么，只改选区内容，其他地方纹丝不动。
-
-![](https://pic.yupi.icu/pine/image-20260901141549744.png)
-
-
-
-7）图层拆分和独立操作
-
-一键把图片按语义拆成主体层和背景层，还可以选择拆出 OCR 文字层。拆完之后每个图层可以独立缩放、调色、移动，互不影响。还支持点选画面中的任意物体，把它提升为独立图层，背景自动修复。图层数据用 JSONB 持久化，切换图片再切回来，图层结构不会丢。
-
-![](https://pic.yupi.icu/pine/image-20260831161340074.png)
-
-
-
-8）多步计划和人机协作
-
-当修图需求比较复杂时，AI 会输出一份包含多个步骤的结构化 JSON 计划，每一步标注了依赖关系。服务端会做工具存在性校验、参数合法性检查、依赖补全和环检测，然后按拓扑排序确定执行顺序。用户可以在计划卡片上确认执行、单步重试或取消后续，真正做到人机协作，AI 干活你把关。
-
-![](https://pic.yupi.icu/pine/image-20260831161657975.png)
-
-
-
-## 二、项目收获
-
-本项目选题新颖，紧跟 AI Agent 和 AIGC 趋势，以 **专业级 AI 修图工具** 为目标。区别于增删改查的烂大街项目，你将从零搭建一个集画布编辑器、AI Agent、异步任务、图层系统于一体的全栈应用，技术深度和广度都远超普通项目。
-
-项目内容丰富扎实，前后端 + AI Agent 全链路覆盖，帮你成为 AI 时代企业的香饽饽，给你的简历和求职大幅增加竞争力！
-
-Python 全栈 + LangChain / LangGraph Agent + 专业画布编辑器 + 异步任务 + 图层系统，技术丰富，玩透 AI Agent 全栈项目开发~
-
-![](https://pic.yupi.icu/pine/exec-78d8e822-f4ff-4152-9e72-0580bd4041ba.png)
-
-本项目给大家讲的是 **通用的 AI Agent 开发方法和真实工具产品从 0 到部署的全流程**，从这个项目中你可以学到：
-
-+ 如何基于 FastAPI + SQLAlchemy 搭建 Python 全栈项目，实现 JWT Cookie 认证？
-+ 如何设计 Provider 抽象层，一行配置切换 Mock 和真实 AI 模型？
-+ 如何用 ARQ 异步队列 + Redis Pub/Sub + SSE 实现实时进度推送？
-+ 如何用 react-konva 搭建专业级图片编辑器，支持图层文档和视口变换？
-+ 如何用 LangChain 接入规划模型，再用 LangGraph 构建 AI Agent，让大模型规划修图步骤？
-+ 如何设计统一的工具注册表，一处定义同时服务 UI 和 Agent？
-+ 如何用 SAM 模型实现智能点选，一键选中任意物体？
-+ 如何做图层拆分，把一张图拆成主体、背景和文字三个独立图层？
-+ 如何实现多步计划的服务端校验、拓扑排序和人机协作？
-+ 如何用 Docker 多阶段构建和 compose profile 实现一条命令部署？
-
-### 编程导航系列项目优势
-
-此外，还能学会很多架构设计、方案取舍、问题排查的方法，提升独立解决复杂问题的能力。本项目还给大家提供了大量的项目扩展点，有能力的同学可以进一步拉开和别人的区分度，无限进步！
-
-满满的项目正反馈：
-
-![编程导航 26 年报喜](https://pic.yupi.icu/1/%E7%BC%96%E7%A8%8B%E5%AF%BC%E8%88%AA%2026%20%E5%B9%B4%E6%8A%A5%E5%96%9C%E6%88%AA%E5%9B%BE.png)
-
-除视频教程外，编程导航的项目还提供：
-
-| 教程资料                     | 求职助力                       |
-| ---------------------------- | ------------------------------ |
-| 详细的文字教程 / 直播笔记    | ⭐️ 现成的简历写法，直接写满简历 |
-| 完整的项目源码               | ⭐️ 项目相关面试题解和真实面经   |
-| 1 对 1 答疑解惑 + 专属交流群 | ⭐️ 项目扩展思路，拉开区分度     |
-| 前端 + Java 后端万用项目模板 | ⭐️ 从学项目到拿 Offer 一条龙    |
-
-![](https://pic.yupi.icu/1/%E9%B1%BC%E7%9A%AE%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98%E7%9A%84%E4%BC%98%E5%8A%BF%E5%A4%A7.jpeg)
-
-## 三、更多介绍
-
-该项目功能完整，涵盖文生图、画布编辑器、AI Agent 对话、编辑工具、区域选择、局部编辑、图层系统、多步计划、营销图、批量处理 10 大模块，覆盖了一个真实 AI 修图产品的核心业务场景。
-
-![](https://pic.yupi.icu/pine/feature-modules.png)
-
-本项目采用前后端分离 + 异步 Worker 架构。前端是 React 19 + Konva 的单页应用，后端是 Python FastAPI 服务，通过 REST API 和 SSE 通信。
-
-后端内部按照路由层、业务服务层、数据访问层分层，AI 生图、抠图、扩图等耗时任务通过 ARQ 异步队列提交到独立 Worker 执行，结果通过 Redis Pub/Sub + SSE 实时推送给前端。LangChain 负责接入规划模型和绑定工具签名，LangGraph 负责 Agent 的计划编排，ToolRegistry 统一管理所有编辑工具的元信息和执行逻辑。数据分别落在 PostgreSQL（业务数据）、Redis（缓存和消息）和 MinIO（图片资源）中。
-
-![](https://pic.yupi.icu/pine/system-architecture.png)
-
-项目的核心业务流程非常清晰，能够帮你理清 AI Agent 项目开发的思路，比如一次 AI 修图请求的完整链路：用户输入自然语言指令 → Agent 规划修图步骤 → 服务端校验和拓扑排序 → 用户确认计划 → 按依赖自动执行工具 → 结果推送前端 → 画布实时更新。
-
-![](https://pic.yupi.icu/pine/business-flow.png)
-
-## 四、快速运行
-
-> 完整的保姆级步骤请参考[《保姆级本地运行指南》](https://www.codefather.cn/course/2099386518517915649/section/2099389234463973378)
+## 本地运行
 
 ### 前置条件
 
 - Docker >= 20（含 Compose）
 - Python >= 3.13
-- Node.js >= 18（推荐 20+）
-- 一个 [阿里云百炼 API Key](https://bailian.console.aliyun.com/)（🔧 可选，用于 AI 文生图、图像编辑和 Agent 对话）
+- Node.js `^20.19.0 || >=22.12.0`（与当前 Vite 版本一致）
+- 真实模型调用所需的 `DASHSCOPE_API_KEY`；AI 对话也需要此配置。
 
-### 1. 克隆项目
+### 1. 准备配置
+
+在项目根目录执行，已有 `.env` 时直接编辑：
 
 ```bash
-git clone https://github.com/yuyuanweb/ai-retouch-agent.git
-cd ai-retouch-agent
+cp -n .env.example .env
 ```
 
+`IMAGE_PROVIDER=mock` 使用本地占位图；真实生图和图像编辑使用 `dashscope`，并填写 `DASHSCOPE_API_KEY`。后端从项目根目录的 `.env` 读取配置。
+
 ### 2. 启动中间件
+
+打开 Docker Desktop，在项目根目录执行：
 
 ```bash
 docker compose up -d
@@ -169,24 +49,26 @@ docker compose up -d
 ### 3. 启动后端
 
 ```bash
+# 在项目根目录打开终端一
 cd backend
 
 # 安装 uv（已有可跳过）
 curl -LsSf https://astral.sh/uv/install.sh | sh   # Windows: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 # 安装依赖（国内可加 --index-url https://pypi.tuna.tsinghua.edu.cn/simple）
-uv sync --all-extras
-
-# 配置环境变量
-cp .env.example .env                  # 至少确认 IMAGE_PROVIDER，mock 免费跑通全流程，dashscope 接真实模型
+uv sync --frozen --all-extras
 
 # 初始化数据库
 uv run alembic upgrade head
 
 # 启动 API 服务（终端一）
 uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 7302
+```
 
-# 启动 Worker（新开终端二）
+在项目根目录打开终端二，启动 Worker：
+
+```bash
+cd backend
 uv run arq app.worker.WorkerSettings
 ```
 
@@ -194,11 +76,11 @@ uv run arq app.worker.WorkerSettings
 
 ### 4. 启动前端
 
-**新开一个终端**：
+**在项目根目录新开终端三**：
 
 ```bash
 cd frontend
-npm install                           # 国内可加 --registry=https://registry.npmmirror.com
+npm ci                                # 国内可加 --registry=https://registry.npmmirror.com
 npm run dev
 ```
 
@@ -207,41 +89,39 @@ npm run dev
 ### 5. 运行测试
 
 ```bash
+# 在项目根目录打开终端
 cd backend
-uv run pytest
+uv run pytest -q
+uv run ruff check app tests
+uv run ruff format --check app tests
 ```
 
-测试通过 mock 隔离了大模型和第三方接口调用，不消耗 API 额度。
+默认只运行断网的单元测试，不连接 PostgreSQL、Redis、对象存储或真实模型。完整服务集成测试需准备独立资源，并显式设置 `TEST_DATABASE_URL`、`TEST_REDIS_URL`、`TEST_S3_ENDPOINT`、`TEST_S3_BUCKET`；数据库名须以 `_test` 结尾，桶名须以 `-test` 结尾，Redis 须显式使用非 0 的独立库，且不能与当前应用配置相同。配置后在 `backend` 执行 `uv run pytest --integration tests/integration`。测试不会初始化数据库或创建桶，需提前按独立测试配置完成迁移和资源准备。
+
+前端在项目根目录另开终端：
+
+```bash
+cd frontend
+npm ci
+npm run type-check
+npm run lint
+npm test
+npm run build
+npm run format:check
+npm run test:e2e
+```
+
+流程测试使用系统已安装的 Google Chrome，构建后临时在 5175 预览生产产物，拦截 API / SSE，结束后自动关闭，不访问真实后端。真实模型与外部服务联调仍需单独验收。
+
+`npm run check:content` 检查模板内容；`npm run build` 自动在构建前后检查源码和发布包，Docker 构建也执行相同检查。禁止推广文案、未批准的外链及未经检查的静态素材。规则和已检查素材的 SHA-256 清单位于 `scripts/content-policy.json`；新增或替换素材须先查看实际内容，再更新清单。第三方依赖许可保持原样，技术文档链接仅按明确地址放行。
 
 ### 6. 部署
 
-`Dockerfile` 提供了多阶段构建，前端编译后打进后端镜像同源托管。服务器上安全组放开 7302、7313 端口，然后：
+`Dockerfile` 提供多阶段构建，前端编译后打进后端镜像同源托管。部署前设置根目录 `.env` 中的 `APP_ENV=production` 和随机的 `JWT_SECRET`，并将 `docker-compose.yml` 中 `app`、`worker` 的 `S3_PUBLIC_ENDPOINT` 改为浏览器可访问的对象存储地址。在项目根目录执行：
 
 ```bash
-cp .env.example .env
-# 生产环境必改：JWT_SECRET（openssl rand -hex 32）、S3_PUBLIC_ENDPOINT=http://你的公网IP:7313
-
 docker compose --profile deploy up -d --build
 docker compose --profile deploy exec app alembic upgrade head
 ```
 
 浏览器打开 `http://你的公网IP:7302`。
-
-
-## 加入项目学习
-
-编程导航已有 **近 30 套项目教程！** 每个项目的学习重点不同，从 0 到 1 带做，有大量完整的 **AI 应用开发 + AI 编程 + 全栈项目**，零基础也能学！
-
-详细请见：[https://codefather.cn/course](https://www.codefather.cn/course)（在该页面右侧有教程推荐和学习建议）
-
-![](https://pic.yupi.icu/1/%E9%A1%B9%E7%9B%AE%E6%95%99%E7%A8%8B.png)
-
-欢迎加入 [编程导航](https://www.codefather.cn/vip)，加入后不仅可以全程跟学本项目，往期 **近 30 套原创项目教程** 也都可以无限回看。还能享受更多原创技术资料、学习和求职指导、上百场面试回放视频，开启你的编程起飞之旅~
-
-🧧 助力新项目学习，给大家发放 **限时编程导航优惠券**，扫码即可领券加入。加入三天内不满意可全额退款，欢迎加入体验，名额有限，速来学习！
-
-![](https://pic.yupi.icu/1/437345684-56411098-b60e-4267-8ba2-4ebc5d416afc.png)
-
-1 天不到 1 块钱，绝对是对自己最值的投资！成为编程导航会员后，可以解锁近 30 套项目的教程和资料，PC 网站和 APP 都可以学习，如图：
-
-![](https://pic.yupi.icu/1/image-20250120113756426-20250422160856746.png)

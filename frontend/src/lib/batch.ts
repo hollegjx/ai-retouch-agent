@@ -1,17 +1,6 @@
-import type { Ratio } from '@/api/runs'
+import type { Ratio } from '@/types/runs'
 
-export type BatchTool =
-  | 'remove_background'
-  | 'replace_background'
-  | 'adjust_image'
-  | 'upscale_image'
-  | 'expand_canvas'
-  | 'prepare_delivery_sizes'
-
-export type BatchOp = {
-  tool: BatchTool
-  params: Record<string, unknown>
-}
+import type { BatchTool, BatchOp } from '@/types/batches'
 
 export const BATCH_STEPS: { id: BatchTool; label: string; hint: string }[] = [
   { id: 'remove_background', label: '去背景', hint: '去掉背景，保留主体' },

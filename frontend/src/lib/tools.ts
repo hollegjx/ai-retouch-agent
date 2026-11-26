@@ -1,4 +1,4 @@
-import { ACTION_LABELS } from '@/api/sessions'
+import { ACTION_LABELS } from '@/lib/sessions'
 
 /**
  * 结果不容易手工还原的操作。这类操作不做二次确认，改为完成后在提示里给撤销入口，

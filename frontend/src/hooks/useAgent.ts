@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { agentApi } from '@/api/agent'
-import { isTerminal } from '@/api/runs'
+import { agentApi } from '@/service/api/agent'
+import { isTerminal } from '@/lib/runs'
 
 const turnsKey = (sessionId: string) => ['session', sessionId, 'messages']
 
@@ -21,8 +21,7 @@ export function useTurns(sessionId: string) {
     queryKey: turnsKey(sessionId),
     queryFn: () => agentApi.turns(sessionId),
     // 第一步 SSE 结束时下一步可能还没写进计划，整轮 running 时接着拉，避免卡片停在「等待中」
-    refetchInterval: (current) =>
-      current.state.data?.at(-1)?.status === 'running' ? 800 : false,
+    refetchInterval: (current) => (current.state.data?.at(-1)?.status === 'running' ? 800 : false),
   })
 
   const latest = query.data?.at(-1)?.status

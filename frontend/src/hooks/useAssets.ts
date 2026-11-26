@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { ACCEPTED_TYPES, MAX_UPLOAD_BYTES, assetsApi } from '@/api/assets'
+import { ACCEPTED_TYPES, MAX_UPLOAD_BYTES } from '@/lib/assets'
+import { assetsApi } from '@/service/api/assets'
 
 const ASSETS_KEY = ['assets']
 

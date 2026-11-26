@@ -1,27 +1,35 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { authApi } from '@/service/api/auth'
+import type { Credentials, User } from '@/types/auth'
+import { ApiError } from '@/request'
 
-import { authApi, type Credentials, type User } from '@/api/auth'
-import { ApiError } from '@/api/client'
+export const ME_KEY = ['auth', 'me']
 
-const ME_KEY = ['auth', 'me']
-
-/** 会话状态以服务端 Cookie 为准，前端不持有令牌，只缓存当前用户。 */
 export function useCurrentUser() {
-  const { data, isPending } = useQuery({
+  const query = useQuery({
     queryKey: ME_KEY,
-    queryFn: () => authApi.me(),
+    queryFn: async () => {
+      try {
+        return await authApi.me()
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) return null
+        throw error
+      }
+    },
     retry: false,
-    staleTime: Infinity,
-    // 未登录是正常状态，不作为错误向上抛
-    throwOnError: false,
+    staleTime: 60_000,
   })
-  return { user: data ?? null, isLoading: isPending }
+  return {
+    user: query.data ?? null,
+    isLoading: query.isPending,
+    error: query.error,
+    refetch: query.refetch,
+  }
 }
 
 export function useAuthActions() {
   const queryClient = useQueryClient()
   const cacheUser = (user: User) => queryClient.setQueryData(ME_KEY, user)
-
   const login = useMutation({
     mutationFn: (body: Credentials) => authApi.login(body),
     onSuccess: cacheUser,
@@ -32,13 +40,10 @@ export function useAuthActions() {
   })
   const logout = useMutation({
     mutationFn: () => authApi.logout(),
-    onSuccess: () => queryClient.clear(),
+    onSuccess: () => {
+      queryClient.clear()
+      queryClient.setQueryData(ME_KEY, null)
+    },
   })
-
   return { login, register, logout }
-}
-
-export function errorMessage(error: unknown): string {
-  if (error instanceof ApiError) return error.message
-  return error instanceof Error ? error.message : '请求失败，请稍后重试'
 }

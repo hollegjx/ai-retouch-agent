@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 from PIL import Image, UnidentifiedImageError
 
+from app.exceptions import BusinessError, ErrorCode
+
 MAX_FILE_BYTES = 20 * 1024 * 1024
 MAX_PIXELS = 50_000_000
 MIN_SIDE = 32
@@ -11,8 +13,14 @@ ALLOWED_FORMATS = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp
 EXTENSIONS = {"JPEG": "jpg", "PNG": "png", "WEBP": "webp"}
 
 
-class ImageRejected(Exception):
-    pass
+class ImageRejected(BusinessError):
+    status_code = 422
+    code = ErrorCode.PARAMS_ERROR
+    message = "图片不符合要求"
+
+
+class ImageTooLarge(ImageRejected):
+    status_code = 413
 
 
 @dataclass(frozen=True)
@@ -31,7 +39,7 @@ def probe(data: bytes) -> ImageMeta:
     if not data:
         raise ImageRejected("文件为空")
     if len(data) > MAX_FILE_BYTES:
-        raise ImageRejected(f"文件超过 {MAX_FILE_BYTES // 1024 // 1024} MB 上限")
+        raise ImageTooLarge(f"文件超过 {MAX_FILE_BYTES // 1024 // 1024} MB 上限")
 
     try:
         with Image.open(io.BytesIO(data)) as image:

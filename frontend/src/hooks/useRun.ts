@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { isTerminal, runsApi, type GenerateInput, type Run, type RunStatus } from '@/api/runs'
+import { isTerminal } from '@/lib/runs'
+import { runsApi } from '@/service/api/runs'
+import type { GenerateInput } from '@/types/runs'
 import { useSmoothedProgress } from '@/hooks/useSmoothedProgress'
 
-type Progress = Pick<Run, 'id' | 'tool' | 'status' | 'progress' | 'stage' | 'error' | 'result'>
+import { parseRunProgress, resolveRunProgress, type RunProgress } from '@/lib/runProgress'
+import { ApiError } from '@/request'
 
 const runKey = (id: string) => ['run', id]
 
@@ -17,12 +20,14 @@ export function useGenerate() {
  */
 export function useRun(runId: string | null) {
   const queryClient = useQueryClient()
-  const [live, setLive] = useState<Progress | null>(null)
+  const [live, setLive] = useState<RunProgress | null>(null)
 
   const snapshot = useQuery({
     queryKey: runKey(runId ?? ''),
     queryFn: () => runsApi.get(runId as string),
     enabled: Boolean(runId),
+    refetchInterval: (query) =>
+      query.state.data && !isTerminal(query.state.data.status) ? 5000 : false,
   })
 
   const snapshotStatus = snapshot.data?.status
@@ -33,7 +38,8 @@ export function useRun(runId: string | null) {
 
     const source = new EventSource(`/events/runs/${runId}`)
     source.onmessage = (event) => {
-      const payload = JSON.parse(event.data) as Progress
+      const payload = parseRunProgress(event.data)
+      if (!payload || payload.id !== runId) return
       setLive(payload)
       if (isTerminal(payload.status)) {
         source.close()
@@ -45,26 +51,26 @@ export function useRun(runId: string | null) {
   }, [runId, snapshotStatus, queryClient])
 
   const run = snapshot.data
-  // 切换任务后旧连接的残留帧不应影响新任务
-  const current = live?.id === runId ? live : null
-  const status: RunStatus | undefined = current?.status ?? run?.status
-  const reported = current?.progress ?? run?.progress ?? 0
+  const current = resolveRunProgress(runId, run, live)
+  const status = current?.status
+  const reported = current?.progress ?? 0
   const progress = useSmoothedProgress({
     reported,
     status,
-    tool: current?.tool ?? run?.tool,
     token: runId,
   })
 
   return {
     status,
     progress,
-    stage: current?.stage ?? run?.stage ?? '',
-    error: current?.error ?? run?.error ?? null,
+    stage: current?.stage ?? '',
+    error: current?.error ?? null,
     prompt: run?.prompt ?? null,
     candidates: run?.candidates ?? [],
-    result: current?.result ?? run?.result ?? {},
+    result: current?.result ?? {},
     isLoading: snapshot.isPending,
-    notFound: snapshot.isError,
+    notFound: snapshot.error instanceof ApiError && snapshot.error.status === 404,
+    loadError: snapshot.error,
+    refetch: snapshot.refetch,
   }
 }

@@ -10,16 +10,19 @@ from urllib.parse import quote
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import storage
+from app.exceptions import BusinessError, ErrorCode
 from app.models import Asset, EditSession
 from app.ratios import ratio_of
 from app.schemas.export import EXPORT_KINDS, ExportItemOut, ExportManifestOut
 from app.services import sessions
+from app.services.canvas import flatten_session
 from app.services.images import EXTENSIONS, probe
-from app.tools.context import flatten_session
 
 
-class UnknownExportAsset(Exception):
-    pass
+class UnknownExportAsset(BusinessError):
+    status_code = 422
+    code = ErrorCode.PARAMS_ERROR
+    message = "素材不在该会话中"
 
 
 @dataclass(frozen=True)

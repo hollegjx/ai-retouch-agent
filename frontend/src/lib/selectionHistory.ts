@@ -1,8 +1,7 @@
 export type StrokePoint = { x: number; y: number }
 
 export type SelectionEntry =
-  | { kind: 'stroke'; points: StrokePoint[] }
-  | { kind: 'point'; point: StrokePoint }
+  { kind: 'stroke'; points: StrokePoint[] } | { kind: 'point'; point: StrokePoint }
 
 export function inputsOf(entries: SelectionEntry[]) {
   return {

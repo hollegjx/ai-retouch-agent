@@ -29,8 +29,8 @@ from app.models.asset import Asset, AssetKind, AssetSource
 from app.models.tool_run import ToolRun
 from app.providers import EditRequest, get_image_provider
 from app.services import assets, runs, selections
+from app.services.canvas import ToolError, document_of, flatten_session, require_session
 from app.tools.base import HIDDEN_MASK, MaskRef, ToolSpec
-from app.tools.context import ToolError, document_of, flatten_session, require_session
 from app.tools.target import require_selection
 
 _RECONSTRUCT = (
@@ -217,8 +217,7 @@ SPLIT_LAYERS = ToolSpec(
     name="split_layers",
     label="拆层",
     description=(
-        "把画面拆成背景和主体。默认不拆文字；"
-        "include_text 为 true 时才识别文字层。已拆过则跳过。"
+        "把画面拆成背景和主体。默认不拆文字；include_text 为 true 时才识别文字层。已拆过则跳过。"
     ),
     params=SplitLayersIn,
     handler=split_layers_exec,

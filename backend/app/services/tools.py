@@ -4,22 +4,25 @@ import uuid
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.exceptions import BusinessError, ErrorCode
 from app.layers import LayerDocument
 from app.models import Asset, ToolRun
 from app.models.tool_run import RunStatus
 from app.providers import ProviderError
 from app.queue import enqueue
 from app.services import assets, runs, sessions
+from app.services.canvas import ToolError
 from app.tools import UnknownTool, spec_of
-from app.tools.context import ToolError
 
 TASK = "run_tool"
 
 logger = logging.getLogger(__name__)
 
 
-class InvalidParams(Exception):
-    pass
+class InvalidParams(BusinessError):
+    status_code = 422
+    code = ErrorCode.PARAMS_ERROR
+    message = "工具参数不符合要求"
 
 
 def validate(tool: str, params: dict) -> dict:

@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import storage
 from app.edits.pixels import adjust, encode, letterbox, remove_background
+from app.exceptions import BusinessError, ErrorCode
 from app.models import Asset, ToolRun
 from app.models.asset import AssetKind, AssetSource
 from app.models.tool_run import RunStatus
@@ -27,12 +28,16 @@ from app.tools.marketing import PrepareDeliverySizesIn
 from app.tools.retouch import AdjustIn
 
 
-class UnknownBatchAsset(Exception):
-    pass
+class UnknownBatchAsset(BusinessError):
+    status_code = 404
+    code = ErrorCode.NOT_FOUND_ERROR
+    message = "素材不存在"
 
 
-class EmptyBatch(Exception):
-    pass
+class EmptyBatch(BusinessError):
+    status_code = 409
+    code = ErrorCode.OPERATION_ERROR
+    message = "还没有可打包的结果"
 
 
 def _unique_ratios(values: list[Ratio]) -> list[Ratio]:
@@ -152,7 +157,7 @@ async def execute(session: AsyncSession, run: ToolRun) -> dict:
         )
 
     if all(item["status"] == "failed" for item in items):
-        from app.tools.context import ToolError
+        from app.services.canvas import ToolError
 
         raise ToolError(items[0]["error"] or "全部处理失败")
     return {"items": items}
@@ -230,3 +235,20 @@ async def pack(session: AsyncSession, run: ToolRun) -> PackedExport:
             zipped.writestr(f"images/{index:02d}-{asset.width}x{asset.height}.{ext}", data)
     filename = f"批量导出-{created_at.strftime('%Y%m%d')}.zip"
     return PackedExport(data=archive.getvalue(), filename=filename)
+
+
+async def submit(session: AsyncSession, user_id: uuid.UUID, payload: BatchIn) -> ToolRun:
+    from app.services import tools
+    from app.tools.batch import BATCH_NAME
+
+    await require_assets(session, user_id, payload.asset_ids)
+    return await tools.submit(session, user_id, BATCH_NAME, payload.model_dump(mode="json"))
+
+
+async def get_for_user(session: AsyncSession, user_id: uuid.UUID, run_id: uuid.UUID) -> ToolRun:
+    from app.tools.batch import BATCH_NAME
+
+    run = await runs.get(session, run_id, user_id)
+    if run.tool != BATCH_NAME:
+        raise runs.RunNotFound
+    return run

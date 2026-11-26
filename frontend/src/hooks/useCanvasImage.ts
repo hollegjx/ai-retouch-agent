@@ -49,12 +49,6 @@ export function useCanvasImage(url: string | undefined) {
   useEffect(() => {
     if (!url) return
 
-    const hit = read(url)
-    if (hit) {
-      setImage(hit)
-      return
-    }
-
     let cancelled = false
     void preloadCanvasImage(url).then((next) => {
       if (!cancelled && next) setImage(next)

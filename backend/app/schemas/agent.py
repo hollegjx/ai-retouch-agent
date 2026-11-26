@@ -12,7 +12,15 @@ MAX_MESSAGE = 1000
 
 
 class MessageIn(BaseModel):
-    text: Annotated[str, Field(min_length=1, max_length=MAX_MESSAGE)]
+    text: Annotated[
+        str,
+        Field(
+            description="自然语言编辑指令",
+            examples=["去除背景并提升亮度"],
+            min_length=1,
+            max_length=MAX_MESSAGE,
+        ),
+    ]
 
     @field_validator("text")
     @classmethod
@@ -24,12 +32,12 @@ class MessageIn(BaseModel):
 
 
 class PlanStepOut(BaseModel):
-    id: str
-    tool: str
-    label: str
-    depends_on: list[str] = []
-    run_id: uuid.UUID | None = None
-    status: str = "pending"
+    id: str = Field(description="服务端生成的唯一标识")
+    tool: str = Field(description="工具名称", examples=["remove_background"])
+    label: str = Field(description="操作的显示名称")
+    depends_on: list[str] = Field(default=[], description="前置步骤标识")
+    run_id: uuid.UUID | None = Field(default=None, description="对应的工具任务标识")
+    status: str = Field(default="pending", description="执行状态")
 
     @classmethod
     def of(cls, step: dict) -> "PlanStepOut":
@@ -45,14 +53,14 @@ class PlanStepOut(BaseModel):
 
 
 class TurnOut(BaseModel):
-    id: uuid.UUID
-    revision: int
-    goal: str
-    reply: str
-    status: RunStatus
-    error: str | None
-    created_at: datetime
-    steps: list[PlanStepOut] = []
+    id: uuid.UUID = Field(description="服务端生成的唯一标识")
+    revision: int = Field(description="画布修订号，使用会话接口返回的最新值", examples=[1])
+    goal: str = Field(description="用户指令")
+    reply: str = Field(description="AI 对计划的说明")
+    status: RunStatus = Field(description="执行状态")
+    error: str | None = Field(description="失败原因，无错误时为 null")
+    created_at: datetime = Field(description="服务端生成的创建时间")
+    steps: list[PlanStepOut] = Field(default=[], description="按依赖关系执行的计划步骤")
 
     @classmethod
     def of(cls, turn: AgentRun) -> "TurnOut":

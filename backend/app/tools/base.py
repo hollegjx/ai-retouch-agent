@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.exceptions import BusinessError, ErrorCode
 from app.models import ToolRun
 
 ToolHandler = Callable[[AsyncSession, ToolRun], Awaitable[dict]]
@@ -12,8 +13,10 @@ ToolHandler = Callable[[AsyncSession, ToolRun], Awaitable[dict]]
 HIDDEN_MASK = ("mask_asset_id", "revision")
 
 
-class UnknownTool(Exception):
-    pass
+class UnknownTool(BusinessError):
+    status_code = 404
+    code = ErrorCode.NOT_FOUND_ERROR
+    message = "工具不存在"
 
 
 class LayerRef(BaseModel):

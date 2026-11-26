@@ -7,6 +7,7 @@ from app.models.asset import AssetKind, AssetSource
 from app.models.tool_run import ToolRun
 from app.providers import GenerateRequest, ProviderError, get_image_provider
 from app.ratios import Ratio, size_of
+from app.schemas.run import GenerateIn
 from app.services import assets, runs
 
 
@@ -50,3 +51,14 @@ async def execute(session: AsyncSession, run: ToolRun) -> dict:
         for data in images
     ]
     return {"asset_ids": [str(asset.id) for asset in created]}
+
+
+async def submit(session: AsyncSession, user_id: uuid.UUID, payload: GenerateIn) -> ToolRun:
+    from app.services import tools
+    from app.tools import GENERATE_IMAGE
+
+    for asset_id in payload.reference_asset_ids:
+        await assets.require_for_user(session, user_id, asset_id)
+    return await tools.submit(
+        session, user_id, GENERATE_IMAGE.name, payload.model_dump(mode="json")
+    )

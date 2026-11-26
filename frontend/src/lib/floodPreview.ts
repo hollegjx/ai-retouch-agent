@@ -1,6 +1,16 @@
-import type { Layer, LayerDocument } from '@/api/sessions'
+import type { Layer, LayerDocument } from '@/types/sessions'
 
-const COLOR = [95, 152, 173, 255] as const
+import { canvasTheme } from '@/styles/canvasTheme'
+
+function selectionColor() {
+  const hex = canvasTheme.selection.slice(1)
+  return [
+    parseInt(hex.slice(0, 2), 16),
+    parseInt(hex.slice(2, 4), 16),
+    parseInt(hex.slice(4, 6), 16),
+    255,
+  ]
+}
 const TOLERANCE = 36
 const MAX_SIDE = 480
 const MAX_FILL = 0.55
@@ -40,7 +50,7 @@ async function flatten(canvasDoc: LayerDocument, urls: Map<string, string>) {
   canvas.height = canvasDoc.height
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
-  ctx.fillStyle = '#ffffff'
+  ctx.fillStyle = canvasTheme.handle
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   for (const layer of canvasDoc.layers) {
@@ -63,7 +73,7 @@ function circleOverlay(width: number, height: number, nx: number, ny: number) {
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
   const radius = Math.max(16, Math.min(width, height) * 0.16)
-  ctx.fillStyle = `rgba(${COLOR[0]}, ${COLOR[1]}, ${COLOR[2]}, 1)`
+  ctx.fillStyle = canvasTheme.selection
   ctx.beginPath()
   ctx.arc(nx * width, ny * height, radius, 0, Math.PI * 2)
   ctx.fill()
@@ -71,6 +81,7 @@ function circleOverlay(width: number, height: number, nx: number, ny: number) {
 }
 
 function floodOverlay(source: HTMLCanvasElement, nx: number, ny: number) {
+  const color = selectionColor()
   const scale = Math.min(1, MAX_SIDE / Math.max(source.width, source.height))
   const width = Math.max(1, Math.round(source.width * scale))
   const height = Math.max(1, Math.round(source.height * scale))
@@ -123,10 +134,10 @@ function floodOverlay(source: HTMLCanvasElement, nx: number, ny: number) {
   for (let i = 0; i < filled.length; i += 1) {
     if (!filled[i]) continue
     const pixel = i * 4
-    overlay.data[pixel] = COLOR[0]
-    overlay.data[pixel + 1] = COLOR[1]
-    overlay.data[pixel + 2] = COLOR[2]
-    overlay.data[pixel + 3] = COLOR[3]
+    overlay.data[pixel] = color[0]
+    overlay.data[pixel + 1] = color[1]
+    overlay.data[pixel + 2] = color[2]
+    overlay.data[pixel + 3] = color[3]
   }
   ctx.putImageData(overlay, 0, 0)
 

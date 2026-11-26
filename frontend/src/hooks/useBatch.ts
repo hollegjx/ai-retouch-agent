@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { batchesApi, type BatchInput } from '@/api/batches'
-import { isTerminal } from '@/api/runs'
-import { errorMessage } from '@/hooks/useAuth'
+import { batchesApi } from '@/service/api/batches'
+import type { BatchInput } from '@/types/batches'
+import { isTerminal } from '@/lib/runs'
+import { errorMessage } from '@/utils/errors'
 import { useRun } from '@/hooks/useRun'
 import { toast } from '@/stores/toasts'
 

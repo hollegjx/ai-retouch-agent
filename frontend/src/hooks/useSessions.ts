@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { isTerminal } from '@/api/runs'
-import {
-  sessionsApi,
-  type SessionCreateInput,
-  type SessionDetail,
-  type SessionPatchInput,
-} from '@/api/sessions'
-import { errorMessage } from '@/hooks/useAuth'
+import { isTerminal } from '@/lib/runs'
+import { sessionsApi } from '@/service/api/sessions'
+import type { SessionCreateInput, SessionDetail, SessionPatchInput } from '@/types/sessions'
+import { errorMessage } from '@/utils/errors'
 import { useRun } from '@/hooks/useRun'
 import { offersUndo, toolLabel } from '@/lib/tools'
 import { toast } from '@/stores/toasts'
@@ -41,6 +37,7 @@ function useCacheSession(id: string) {
   const queryClient = useQueryClient()
   return (detail: SessionDetail) => {
     queryClient.setQueryData(detailKey(id), detail)
+    void queryClient.invalidateQueries({ queryKey: ['assets'] })
     void queryClient.invalidateQueries({ queryKey: LIST_KEY })
     void queryClient.invalidateQueries({ queryKey: historyKey(id) })
   }
@@ -52,6 +49,7 @@ export function useCreateSession() {
     mutationFn: (input: SessionCreateInput) => sessionsApi.create(input),
     onSuccess: (detail) => {
       queryClient.setQueryData(detailKey(detail.id), detail)
+      void queryClient.invalidateQueries({ queryKey: ['assets'] })
       void queryClient.invalidateQueries({ queryKey: LIST_KEY })
     },
   })
@@ -78,6 +76,7 @@ export function useSessionTools(id: string) {
   const [pendingRunId, setPendingRunId] = useState<string | null>(null)
   const live = useRun(pendingRunId)
 
+  const invokeLock = useRef(false)
   const invoke = useMutation({
     mutationFn: ({ tool, params }: { tool: string; params?: Record<string, unknown> }) =>
       sessionsApi.invoke(id, tool, params),
@@ -86,6 +85,9 @@ export function useSessionTools(id: string) {
       if (!isTerminal(body.run.status)) setPendingRunId(body.run.id)
     },
     onError: (error) => toast(errorMessage(error), 'danger'),
+    onSettled: () => {
+      invokeLock.current = false
+    },
   })
 
   const historyLock = useRef(false)
@@ -110,8 +112,11 @@ export function useSessionTools(id: string) {
   const busy = invoke.isPending || undo.isPending || redo.isPending || waiting
 
   // 提示里的撤销要在完成那一刻才可用，用 ref 拿最新的 mutation，避免把它塞进 effect 依赖
-  const undoRef = useRef(() => undo.mutate())
-  undoRef.current = () => undo.mutate()
+  const undoMutation = undo.mutate
+  const undoRef = useRef(() => undoMutation())
+  useEffect(() => {
+    undoRef.current = () => undoMutation()
+  }, [undoMutation])
   const pendingTool = invoke.variables?.tool
   // 一个任务只播报一次，后续依赖变化不会再弹提示
   const announced = useRef<string | null>(null)
@@ -153,7 +158,11 @@ export function useSessionTools(id: string) {
   }
 
   return {
-    invoke: (tool: string, params?: Record<string, unknown>) => invoke.mutate({ tool, params }),
+    invoke: (tool: string, params?: Record<string, unknown>) => {
+      if (busy || invokeLock.current) return
+      invokeLock.current = true
+      invoke.mutate({ tool, params })
+    },
     undo: () => runHistory(() => undo.mutate()),
     redo: () => runHistory(() => redo.mutate()),
     busy,

@@ -1,27 +1,39 @@
 import uuid
 from collections.abc import Iterable
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.exceptions import BusinessError, ErrorCode
 from app.layers import BASE_LAYER_ID, LayerDocument, document_of
 from app.models import Asset, EditHistory, EditSession, SessionAsset
 from app.models.edit_history import HISTORY_LIMIT
+from app.repositories.session_history import entry_at, max_seq, next_position
+from app.repositories.session_history import history_of as history_of
+from app.schemas.asset import AssetOut
+from app.schemas.session import SessionCreateIn, SessionDetailOut, SessionPatchIn
+from app.services import assets as asset_service
 
 TITLE_LIMIT = 80
 DEFAULT_TITLE = "未命名会话"
 
 
-class SessionNotFound(Exception):
-    pass
+class SessionNotFound(BusinessError):
+    status_code = 404
+    code = ErrorCode.NOT_FOUND_ERROR
+    message = "会话不存在"
 
 
-class CannotUndo(Exception):
-    pass
+class CannotUndo(BusinessError):
+    status_code = 409
+    code = ErrorCode.OPERATION_ERROR
+    message = "没有可撤销的操作"
 
 
-class CannotRedo(Exception):
-    pass
+class CannotRedo(BusinessError):
+    status_code = 409
+    code = ErrorCode.OPERATION_ERROR
+    message = "没有可重做的操作"
 
 
 def normalize_title(text: str | None) -> str:
@@ -37,13 +49,6 @@ def snapshot(record: EditSession) -> dict:
     }
 
 
-async def _next_position(session: AsyncSession, session_id: uuid.UUID) -> int:
-    last = await session.scalar(
-        select(func.max(SessionAsset.position)).where(SessionAsset.session_id == session_id)
-    )
-    return (last or 0) + 1
-
-
 async def _attach(session: AsyncSession, record: EditSession, assets: Iterable[Asset]) -> int:
     """把资产挂进会话图片墙，返回新挂上的数量。"""
     known = set(
@@ -51,7 +56,7 @@ async def _attach(session: AsyncSession, record: EditSession, assets: Iterable[A
             select(SessionAsset.asset_id).where(SessionAsset.session_id == record.id)
         )
     )
-    position = await _next_position(session, record.id)
+    position = await next_position(session, record.id)
     added = 0
 
     for asset in assets:
@@ -62,21 +67,6 @@ async def _attach(session: AsyncSession, record: EditSession, assets: Iterable[A
         position += 1
         added += 1
     return added
-
-
-async def _entry(session: AsyncSession, record: EditSession, seq: int) -> EditHistory | None:
-    return await session.scalar(
-        select(EditHistory).where(EditHistory.session_id == record.id, EditHistory.seq == seq)
-    )
-
-
-async def _max_seq(session: AsyncSession, record: EditSession) -> int:
-    return (
-        await session.scalar(
-            select(func.max(EditHistory.seq)).where(EditHistory.session_id == record.id)
-        )
-        or 0
-    )
 
 
 async def _append_history(
@@ -118,6 +108,7 @@ async def apply_edit(
     extra_assets: Iterable[Asset] = (),
     result: dict | None = None,
     bump_revision: bool = True,
+    commit: bool = True,
 ) -> EditSession:
     """应用一次可撤销编辑：先截断重做分支，再写入文档快照。"""
     before = snapshot(record)
@@ -139,8 +130,9 @@ async def apply_edit(
     # 结果只进图片墙时画布没变，但仍要留一条记录，否则用户在编辑记录里找不到这次生成
     attached = await _attach(session, record, extra_assets)
     if not changed and not attached:
-        await session.commit()
-        await session.refresh(record)
+        if commit:
+            await session.commit()
+            await session.refresh(record)
         return record
 
     await session.execute(
@@ -166,8 +158,9 @@ async def apply_edit(
             "revision": record.revision,
         },
     )
-    await session.commit()
-    await session.refresh(record)
+    if commit:
+        await session.commit()
+        await session.refresh(record)
     return record
 
 
@@ -244,24 +237,15 @@ async def assets_of(session: AsyncSession, record: EditSession) -> list[Asset]:
     return list(result)
 
 
-async def history_of(session: AsyncSession, record: EditSession) -> list[EditHistory]:
-    result = await session.scalars(
-        select(EditHistory)
-        .where(EditHistory.session_id == record.id)
-        .order_by(EditHistory.seq.desc())
-    )
-    return list(result)
-
-
 async def undo_state(session: AsyncSession, record: EditSession) -> tuple[bool, bool]:
-    return record.history_seq > 1, await _max_seq(session, record) > record.history_seq
+    return record.history_seq > 1, await max_seq(session, record) > record.history_seq
 
 
 async def previous_document(session: AsyncSession, record: EditSession) -> LayerDocument | None:
     """本轮操作前的画布，供前后对比。"""
     if record.history_seq <= 1:
         return None
-    entry = await _entry(session, record, record.history_seq)
+    entry = await entry_at(session, record, record.history_seq)
     before = (entry.params if entry else {}).get("before") or {}
     raw = before.get("document")
     return LayerDocument.model_validate(raw) if raw else None
@@ -287,14 +271,40 @@ async def record_result(
     )
 
 
-async def rename(session: AsyncSession, record: EditSession, title: str) -> EditSession:
-    record.title = normalize_title(title)
+async def create_for_user(
+    session: AsyncSession, user_id: uuid.UUID, payload: SessionCreateIn
+) -> EditSession:
+    current = await asset_service.require_for_user(session, user_id, payload.current_asset_id)
+    wall = [
+        await asset_service.require_for_user(session, user_id, asset_id)
+        for asset_id in payload.asset_ids
+        if asset_id != current.id
+    ]
+    return await create(session, user_id, current, wall, payload.title)
+
+
+async def update_for_user(
+    session: AsyncSession, user_id: uuid.UUID, session_id: uuid.UUID, payload: SessionPatchIn
+) -> EditSession:
+    """先完成归属校验，再把标题、图片和历史作为一次操作提交。"""
+    record = await get_for_user(session, session_id, user_id)
+    asset = (
+        await asset_service.require_for_user(session, user_id, payload.current_asset_id)
+        if payload.current_asset_id is not None
+        else None
+    )
+    if payload.title is not None:
+        record.title = normalize_title(payload.title)
+    if asset is not None:
+        await switch_current(session, record, asset, commit=False)
     await session.commit()
     await session.refresh(record)
     return record
 
 
-async def switch_current(session: AsyncSession, record: EditSession, asset: Asset) -> EditSession:
+async def switch_current(
+    session: AsyncSession, record: EditSession, asset: Asset, *, commit: bool = True
+) -> EditSession:
     """切换画布当前图。修订号递增，使旧修订号上的选区与遮罩失效。"""
     document = await _last_document_for(session, record, asset.id)
     if _cropped_base(document, asset):
@@ -313,6 +323,7 @@ async def switch_current(session: AsyncSession, record: EditSession, asset: Asse
         current=asset,
         document=document,
         extra_assets=[asset],
+        commit=commit,
     )
 
 
@@ -350,7 +361,7 @@ async def _last_document_for(
 async def undo(session: AsyncSession, record: EditSession) -> EditSession:
     if record.history_seq <= 1:
         raise CannotUndo
-    entry = await _entry(session, record, record.history_seq)
+    entry = await entry_at(session, record, record.history_seq)
     before = (entry.params if entry else {}).get("before")
     if not before:
         raise CannotUndo
@@ -362,7 +373,7 @@ async def undo(session: AsyncSession, record: EditSession) -> EditSession:
 
 
 async def redo(session: AsyncSession, record: EditSession) -> EditSession:
-    entry = await _entry(session, record, record.history_seq + 1)
+    entry = await entry_at(session, record, record.history_seq + 1)
     if entry is None or "document" not in entry.result:
         raise CannotRedo
     _restore(record, entry.result)
@@ -370,3 +381,15 @@ async def redo(session: AsyncSession, record: EditSession) -> EditSession:
     await session.commit()
     await session.refresh(record)
     return record
+
+
+async def detail(session: AsyncSession, record: EditSession) -> SessionDetailOut:
+    wall = await assets_of(session, record)
+    can_undo, can_redo = await undo_state(session, record)
+    return SessionDetailOut.of_detail(
+        record,
+        [AssetOut.of(asset) for asset in wall],
+        previous_document=await previous_document(session, record),
+        can_undo=can_undo,
+        can_redo=can_redo,
+    )

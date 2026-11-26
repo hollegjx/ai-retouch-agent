@@ -1,4 +1,4 @@
-import type { LayerDocument } from '@/api/sessions'
+import type { LayerDocument } from '@/types/sessions'
 
 const BASE = 'base'
 const SUBJECT = 'subject'

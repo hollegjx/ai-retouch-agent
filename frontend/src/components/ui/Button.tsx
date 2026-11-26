@@ -41,7 +41,7 @@ export default function Button({
         .join(' ')}
     >
       {running && variant !== 'icon' ? (
-        <span className="flex items-center justify-center gap-1.5">
+        <span className="flex items-center justify-center gap-2">
           {children}
           <span className="tabular-nums opacity-70">{Math.round(filled)}%</span>
         </span>

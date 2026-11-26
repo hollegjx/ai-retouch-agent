@@ -12,12 +12,27 @@ MAX_REFERENCES = 3
 
 
 class GenerateIn(BaseModel):
-    prompt: Annotated[str, Field(min_length=1, max_length=MAX_PROMPT)]
-    ratio: Ratio = Ratio.SQUARE
-    count: Annotated[int, Field(ge=1, le=6)] = 4
-    negative_prompt: Annotated[str | None, Field(max_length=MAX_PROMPT)] = None
-    seed: Annotated[int | None, Field(ge=0, le=2147483647)] = None
-    reference_asset_ids: Annotated[list[uuid.UUID], Field(max_length=MAX_REFERENCES)] = []
+    prompt: Annotated[
+        str,
+        Field(
+            description="画面描述，去除首尾空格后不得为空",
+            examples=["白色陶瓷杯，浅木色桌面，自然光"],
+            min_length=1,
+            max_length=MAX_PROMPT,
+        ),
+    ]
+    ratio: Ratio = Field(default=Ratio.SQUARE, description="输出画面比例", examples=["1:1"])
+    count: Annotated[int, Field(description="候选图片数量", examples=[4], ge=1, le=6)] = 4
+    negative_prompt: Annotated[
+        str | None, Field(description="排除的画面内容", max_length=MAX_PROMPT)
+    ] = None
+    seed: Annotated[
+        int | None, Field(description="随机种子，固定种子便于复现", ge=0, le=2147483647)
+    ] = None
+    reference_asset_ids: Annotated[
+        list[uuid.UUID],
+        Field(description="最多三张当前用户拥有的参考图", max_length=MAX_REFERENCES),
+    ] = []
 
     @field_validator("prompt")
     @classmethod
@@ -34,15 +49,19 @@ class GenerateIn(BaseModel):
 
 
 class RunOut(BaseModel):
-    id: uuid.UUID
-    tool: str
-    status: RunStatus
-    progress: int
-    stage: str
-    error: str | None
-    prompt: str | None = None
-    candidates: list[AssetOut] = []
-    result: dict = {}
+    id: uuid.UUID = Field(description="服务端生成的唯一标识")
+    tool: str = Field(description="工具名称", examples=["remove_background"])
+    status: RunStatus = Field(description="执行状态")
+    progress: int = Field(description="任务进度，0–100", examples=[50])
+    stage: str = Field(description="当前执行阶段")
+    error: str | None = Field(description="失败原因，无错误时为 null")
+    prompt: str | None = Field(
+        default=None,
+        description="画面描述，去除首尾空格后不得为空",
+        examples=["白色陶瓷杯，浅木色桌面，自然光"],
+    )
+    candidates: list[AssetOut] = Field(default=[], description="生成的候选图片")
+    result: dict = Field(default={}, description="工具执行结果")
 
     @classmethod
     def of(cls, run: ToolRun, candidates: list[AssetOut] | None = None) -> "RunOut":

@@ -1,5 +1,5 @@
-import type { Asset, AssetKind } from '@/api/assets'
-import type { Ratio } from '@/api/runs'
+import type { Asset, AssetKind } from '@/types/assets'
+import type { Ratio } from '@/types/runs'
 
 export type MarketingKind = 'product' | 'scene' | 'model' | 'poster'
 

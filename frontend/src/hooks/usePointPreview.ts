@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 
-import type { LayerDocument } from '@/api/sessions'
+import type { LayerDocument } from '@/types/sessions'
 import { floodPreview } from '@/lib/floodPreview'
 import type { Marker } from '@/stores/editorUi'
 

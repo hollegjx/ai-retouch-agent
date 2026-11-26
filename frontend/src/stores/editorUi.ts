@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
-import type { Ratio } from '@/api/runs'
-import type { LayerDocument } from '@/api/sessions'
+import type { Ratio } from '@/types/runs'
+import type { LayerDocument } from '@/types/sessions'
 
 export type CropRatio = Ratio | 'free'
 export type CropRect = { x: number; y: number; width: number; height: number }

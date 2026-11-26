@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import type { LayerDocument } from '@/api/sessions'
+import type { LayerDocument } from '@/types/sessions'
 import { preloadCanvasImage } from '@/hooks/useCanvasImage'
 
 export type HeldCanvas = { document: LayerDocument; urls: Map<string, string> }
@@ -34,6 +34,7 @@ export function useHeldCanvas(document: LayerDocument, urls: Map<string, string>
   useEffect(() => {
     const next = { document, urls, key: incomingKey }
     if (incomingKey === held.key) {
+      // oxlint-disable-next-line react/set-state-in-effect -- 同步已解码图像快照供切图时保留最后一帧
       setHeld((current) =>
         current.document === document && current.urls === urls ? current : next,
       )
@@ -50,10 +51,14 @@ export function useHeldCanvas(document: LayerDocument, urls: Map<string, string>
       return
     }
     const loaded = Promise.all(urlsToLoad.map(preloadCanvasImage))
-    const timeout = new Promise((resolve) => setTimeout(resolve, 4000))
+    let timer: ReturnType<typeof setTimeout>
+    const timeout = new Promise((resolve) => {
+      timer = setTimeout(resolve, 4000)
+    })
     void Promise.race([loaded, timeout]).then(apply)
     return () => {
       cancelled = true
+      clearTimeout(timer)
     }
   }, [incomingKey, held.key, document, urls])
 

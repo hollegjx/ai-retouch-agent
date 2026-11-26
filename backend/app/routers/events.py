@@ -3,7 +3,7 @@ import json
 import uuid
 from collections.abc import AsyncIterator
 
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Response
 from fastapi.responses import StreamingResponse
 
 from app import events
@@ -11,7 +11,6 @@ from app.db import SessionDep
 from app.deps import CurrentUser
 from app.models.tool_run import RunStatus
 from app.services import runs
-from app.services.runs import RunNotFound
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -25,12 +24,13 @@ def _frame(payload: dict) -> str:
     return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
 
-@router.get("/runs/{run_id}")
+@router.get(
+    "/runs/{run_id}",
+    summary="订阅任务进度",
+    description="需要登录且拥有此任务；先发送状态快照，再持续推送 SSE，终态时关闭。",
+)
 async def stream_run(run_id: uuid.UUID, user: CurrentUser, session: SessionDep) -> Response:
-    try:
-        await runs.get(session, run_id, user.id)
-    except RunNotFound as exc:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "任务不存在") from exc
+    await runs.get(session, run_id, user.id)
 
     async def stream() -> AsyncIterator[str]:
         # 先订阅再读快照，否则任务在两步之间结束会让连接一直空等

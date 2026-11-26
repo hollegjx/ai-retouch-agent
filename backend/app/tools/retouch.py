@@ -7,8 +7,8 @@ from app.edits.pixels import adjust, remove_background
 from app.models.asset import AssetKind
 from app.models.tool_run import ToolRun
 from app.services import runs
+from app.services.canvas import document_of, require_session
 from app.tools.base import LayerRef, ToolSpec
-from app.tools.context import document_of, require_session
 from app.tools.target import layer_image, resolve_target, write_layer_image
 
 _LAYER = "layer_id"

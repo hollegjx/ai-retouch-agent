@@ -5,11 +5,16 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import events
+from app.exceptions import BusinessError, ErrorCode
 from app.models.tool_run import RunStatus, ToolRun
+from app.schemas.asset import AssetOut
+from app.services import assets as asset_service
 
 
-class RunNotFound(Exception):
-    pass
+class RunNotFound(BusinessError):
+    status_code = 404
+    code = ErrorCode.NOT_FOUND_ERROR
+    message = "任务不存在"
 
 
 def snapshot(run: ToolRun) -> dict:
@@ -98,3 +103,13 @@ async def finish(
     run.stage = "已完成" if status is RunStatus.SUCCEEDED else "已结束"
     run.finished_at = datetime.now(UTC)
     await _commit(session, run)
+
+
+async def candidates(session: AsyncSession, run: ToolRun) -> list[AssetOut]:
+    """候选图的签名 URL 有有效期，每次读取时重新签发。"""
+    result = []
+    for raw in run.result.get("asset_ids", []):
+        asset = await asset_service.get_for_user(session, run.user_id, uuid.UUID(raw))
+        if asset is not None:
+            result.append(AssetOut.of(asset))
+    return result

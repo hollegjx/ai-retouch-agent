@@ -15,8 +15,8 @@ from app.layers import (
 from app.models import EditSession, ToolRun
 from app.models.asset import AssetKind, AssetSource
 from app.services import assets, selections
+from app.services.canvas import ToolError, document_of
 from app.services.selections import EmptySelection, StaleSelection
-from app.tools.context import ToolError, document_of
 
 STALE_SELECTION = "画幅已变，选区失效，请重新选择"
 

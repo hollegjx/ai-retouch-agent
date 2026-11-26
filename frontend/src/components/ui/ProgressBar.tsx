@@ -21,7 +21,7 @@ export default function ProgressBar({
       className={`bg-line overflow-hidden ${className}`}
     >
       <div
-        className={`h-full ${tone === 'brand' ? 'bg-brand-strong' : 'bg-ink'}`}
+        className={`h-full ${tone === 'brand' ? 'bg-brand-strong' : 'bg-brand'}`}
         style={{ width: `${Math.max(clamped, 2)}%` }}
       />
     </div>

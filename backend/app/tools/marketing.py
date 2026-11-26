@@ -9,8 +9,8 @@ from app.models.tool_run import ToolRun
 from app.providers import EditRequest, get_image_provider
 from app.ratios import DELIVERY_RATIOS, Ratio, size_of
 from app.services import assets, runs
+from app.services.canvas import flatten_session, require_session
 from app.tools.base import ToolSpec
-from app.tools.context import flatten_session, require_session
 
 
 class MarketingKind(enum.StrEnum):
@@ -22,20 +22,15 @@ class MarketingKind(enum.StrEnum):
 
 _PROMPTS = {
     MarketingKind.PRODUCT: (
-        "把商品放在纯白背景上，居中构图，柔和顶光，边缘干净，"
-        "保留商品原有材质与颜色，输出电商主图。"
+        "把商品放在纯白背景上，居中构图，柔和顶光，边缘干净，保留商品原有材质与颜色，输出电商主图。"
     ),
     MarketingKind.SCENE: (
-        "把商品放到真实生活场景中，侧逆光、浅景深，氛围自然，"
-        "保留商品原有材质与颜色。"
+        "把商品放到真实生活场景中，侧逆光、浅景深，氛围自然，保留商品原有材质与颜色。"
     ),
     MarketingKind.MODEL: (
-        "生成模特手持或佩戴该商品的半身展示图，简洁室内背景、自然光，"
-        "商品细节清晰可辨。"
+        "生成模特手持或佩戴该商品的半身展示图，简洁室内背景、自然光，商品细节清晰可辨。"
     ),
-    MarketingKind.POSTER: (
-        "做一张促销海报，突出商品，右侧或下方留出文字区，构图干净有冲击力。"
-    ),
+    MarketingKind.POSTER: ("做一张促销海报，突出商品，右侧或下方留出文字区，构图干净有冲击力。"),
 }
 
 

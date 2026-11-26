@@ -25,7 +25,9 @@ def ensure_bucket() -> None:
     bucket = get_settings().s3_bucket
     try:
         _client().head_bucket(Bucket=bucket)
-    except ClientError:
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] not in {"404", "NoSuchBucket", "NotFound"}:
+            raise
         _client().create_bucket(Bucket=bucket)
 
 
@@ -43,7 +45,11 @@ async def get(key: str) -> bytes:
     response = await asyncio.to_thread(
         _client().get_object, Bucket=get_settings().s3_bucket, Key=key
     )
-    return response["Body"].read()
+    body = response["Body"]
+    try:
+        return await asyncio.to_thread(body.read)
+    finally:
+        body.close()
 
 
 async def delete(key: str) -> None:
@@ -58,3 +64,8 @@ def signed_url(key: str) -> str:
         Params={"Bucket": settings.s3_bucket, "Key": key},
         ExpiresIn=settings.s3_url_ttl,
     )
+
+
+def check_bucket() -> None:
+    """只检查连通性，不在健康检查中创建资源。"""
+    _client().head_bucket(Bucket=get_settings().s3_bucket)

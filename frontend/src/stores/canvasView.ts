@@ -4,7 +4,7 @@ const MIN_SCALE = 0.05
 const MAX_SCALE = 8
 // 适应画布时留出四周余量，避免图片贴边
 const FIT_RATIO = 0.92
-const GLIDE_MS = 260
+const GLIDE_MS = 160
 // 触控板捏合每帧只有几个像素，鼠标滚轮一格上百；先夹住再取指数，两种设备都跟手
 const WHEEL_CAP = 50
 const WHEEL_GAIN = 0.0035
@@ -45,6 +45,10 @@ function stopGlide() {
 /** 按钮触发的缩放与适应走缓动，手势与拖拽直接跟手。 */
 function glide(apply: (view: Viewport) => void, from: Viewport, to: Viewport) {
   stopGlide()
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    apply(to)
+    return
+  }
   const start = performance.now()
   const tick = (now: number) => {
     const ratio = easeOut(Math.min(1, (now - start) / GLIDE_MS))

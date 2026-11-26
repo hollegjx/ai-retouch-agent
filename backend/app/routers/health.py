@@ -18,10 +18,12 @@ async def _probe(awaitable: Awaitable) -> str:
         return f"error: {type(exc).__name__}"
 
 
-@router.get("")
+@router.get(
+    "", summary="检查服务健康状态", description="无需登录；只读检查数据库与对象存储连通状态。"
+)
 async def health(session: SessionDep) -> dict[str, str]:
     database, object_storage = await asyncio.gather(
         _probe(session.execute(text("select 1"))),
-        _probe(asyncio.to_thread(storage.ensure_bucket)),
+        _probe(asyncio.to_thread(storage.check_bucket)),
     )
     return {"api": "ok", "database": database, "storage": object_storage}

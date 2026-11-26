@@ -7,6 +7,7 @@ from sqlalchemy.orm.attributes import flag_modified
 
 from app import agent
 from app.agent import plan as plan_mod
+from app.exceptions import BusinessError, ErrorCode
 from app.layers import Layer, LayerDocument, LayerKind
 from app.models import AgentRun, EditSession, ToolRun
 from app.models.tool_run import RunStatus
@@ -16,20 +17,28 @@ from app.tools import spec_of
 logger = logging.getLogger(__name__)
 
 
-class TurnNotFound(Exception):
-    pass
+class TurnNotFound(BusinessError):
+    status_code = 404
+    code = ErrorCode.NOT_FOUND_ERROR
+    message = "对话不存在"
 
 
-class CannotConfirm(Exception):
-    pass
+class CannotConfirm(BusinessError):
+    status_code = 409
+    code = ErrorCode.OPERATION_ERROR
+    message = "当前没有待确认的步骤"
 
 
-class CannotCancel(Exception):
-    pass
+class CannotCancel(BusinessError):
+    status_code = 409
+    code = ErrorCode.OPERATION_ERROR
+    message = "当前没有可取消的步骤"
 
 
-class CannotRetry(Exception):
-    pass
+class CannotRetry(BusinessError):
+    status_code = 409
+    code = ErrorCode.OPERATION_ERROR
+    message = "没有失败的步骤可重试"
 
 
 async def describe(session: AsyncSession, record: EditSession) -> str:

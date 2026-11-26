@@ -1,0 +1,62 @@
+{
+  "forbiddenText": [
+    "鱼皮",
+    "魚皮",
+    "yupi",
+    "codefather",
+    "yuyuanweb",
+    "编程导航",
+    "編程導航",
+    "知识星球",
+    "知識星球",
+    "加入项目学习",
+    "简历写法",
+    "面试题解",
+    "扫码领券",
+    "扫码加入",
+    "关注公众号",
+    "加入社群",
+    "限时优惠券"
+  ],
+  "allowedSourceUrls": [
+    "http://www.w3.org/2000/svg",
+    "http://localhost:7301",
+    "http://localhost:7302",
+    "http://localhost:7302/api/health",
+    "http://localhost:7313",
+    "http://127.0.0.1:5175",
+    "http://127.0.0.1:7302",
+    "http://minio:9000",
+    "http://你的公网ip:7302",
+    "https://dashscope.aliyuncs.com",
+    "https://{workspaceid}.cn-beijing.maas.aliyuncs.com",
+    "https://astral.sh/uv/install.sh",
+    "https://astral.sh/uv/install.ps1",
+    "https://pypi.tuna.tsinghua.edu.cn/simple",
+    "https://registry.npmmirror.com"
+  ],
+  "allowedBundleUrls": [
+    "http://localhost",
+    "http://www.w3.org/1998/math/mathml",
+    "http://www.w3.org/1999/xlink",
+    "http://www.w3.org/2000/svg",
+    "http://www.w3.org/xml/1998/namespace",
+    "https://react.dev/errors/",
+    "https://reactrouter.com/en/main/routers/picking-a-router",
+    "https://github.com/ungap/url-search-params",
+    "https://github.com/konvajs/react-konva/issues/194",
+    "https://github.com/konvajs/react-konva/issues/256",
+    "https://konvajs.github.io/docs/react/dom_portal.html",
+    "https://konvajs.org/docs/posts/tainted_canvas.html",
+    "https://tailwindcss.com"
+  ],
+  "reviewedAssets": {
+    "frontend/public/apple-touch-icon.png": "2895ac2c7afd1555c449df950314ee2950811571e2ce77219b6532f952a2bffb",
+    "frontend/public/favicon-32.png": "347cb939e5f892319302369393c797eebd12d9f3e3ff53d915c32f7e5fc85cb0",
+    "frontend/public/favicon.svg": "8f8df42edac07d5754bb5794d5b9b5829a15922b2b3ffbf359f997b663de934f",
+    "backend/app/eval/dataset/images/product-white.png": "bb4d28230e31246825bb45abb7b142c3b5ac20c4742a6f0e30f8bab95421de06",
+    "backend/app/eval/dataset/images/product.png": "9eebc11d4e728cb5716ee5e524e4363ad1697755a57882389c4fd504ec51ee0b",
+    "backend/app/eval/dataset/expect/product-alpha.png": "cd5ac47dba40d9a22905d99364e4be39f50a30fb8c614ee007458d8e321d30fd",
+    "backend/app/eval/dataset/expect/product-bright.png": "c9470f1d668805d908a009dc5f0528f1e0f5b4e95425e491b4f869ee33495ba4"
+  }
+}
