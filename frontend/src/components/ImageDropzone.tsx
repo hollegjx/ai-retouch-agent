@@ -61,25 +61,31 @@ export default function ImageDropzone({
           setDragging(false)
           void accept(Array.from(event.dataTransfer.files))
         }}
-        className={`flex w-full flex-col items-center gap-3 rounded-card border border-dashed px-4 py-8 disabled:opacity-50 ${dragging ? 'border-brand bg-brand-soft' : 'border-line-strong bg-soft hover:border-brand'}`}
+        className={`group flex w-full flex-col items-center gap-3 rounded-[20px] border-[1.5px] border-dashed px-4 py-10 transition-[background-color,border-color,transform,box-shadow] duration-500 ease-soft disabled:opacity-50 ${dragging ? 'border-ink bg-paper scale-[1.015] shadow-[0_12px_32px_rgb(0_0_0/0.08)]' : 'border-line-strong bg-soft hover:border-ink/30 hover:bg-paper'}`}
       >
-        <svg className="size-8 text-muted" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M12 16V4m0 0L7 9m5-5 5 5M4 15v5h16v-5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span className="font-medium">
+        <span
+          className={`grid size-12 place-items-center rounded-full bg-paper shadow-[0_1px_2px_rgb(0_0_0/0.06),0_4px_12px_rgb(0_0_0/0.06)] transition-transform duration-500 ease-bounce group-hover:-translate-y-1 ${dragging ? '-translate-y-1.5 scale-110' : ''} ${busy ? 'animate-pulse' : ''}`}
+        >
+          <svg className="size-6 text-ink" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 16V4m0 0L7 9m5-5 5 5M4 15v5h16v-5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+        <span className="text-[15px] font-medium">
           {disabled || busy
             ? '正在处理…'
             : multiple
               ? '拖入多张图片，或点击选择'
               : '拖入图片，或点击选择'}
         </span>
-        <span className="text-xs text-muted">{hint ?? 'JPG / PNG / WebP，单张不超过 20 MB'}</span>
+        <span className="text-[13px] text-muted">
+          {hint ?? 'JPG / PNG / WebP，单张不超过 20 MB'}
+        </span>
       </button>
       <input
         ref={input}
@@ -95,7 +101,7 @@ export default function ImageDropzone({
         }}
       />
       {error && (
-        <p role="alert" className="mt-2 text-danger">
+        <p role="alert" className="animate-fade-in mt-3 text-sm text-danger">
           {error}
         </p>
       )}

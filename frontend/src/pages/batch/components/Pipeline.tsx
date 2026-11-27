@@ -31,12 +31,17 @@ export function Pipeline({
 
   return (
     <section>
-      <h2 className="text-ink mb-3 text-sm font-medium">处理步骤</h2>
-      <ul className="grid gap-3">
+      <h2 className="text-ink mb-4 text-[19px] font-semibold tracking-[-0.022em]">处理步骤</h2>
+      <ul className="grid gap-2">
         {BATCH_STEPS.map((step) => {
           const on = draft.selected.includes(step.id)
           return (
-            <li key={step.id} className="border-line bg-paper rounded-card border p-4">
+            <li
+              key={step.id}
+              className={`rounded-[16px] p-4 transition-[background-color,box-shadow] duration-300 ease-soft ${
+                on ? 'bg-paper shadow-[0_0_0_1.5px_var(--ink)]' : 'bg-soft hover:bg-[#ededf0]'
+              }`}
+            >
               <label className="flex cursor-pointer items-start gap-3">
                 <input
                   type="checkbox"
@@ -45,8 +50,8 @@ export function Pipeline({
                   className="mt-1"
                 />
                 <span>
-                  <span className="text-ink block text-sm font-medium">{step.label}</span>
-                  <span className="text-faint block text-xs">{step.hint}</span>
+                  <span className="text-ink block text-[15px] font-medium">{step.label}</span>
+                  <span className="text-muted mt-0.5 block text-[13px]">{step.hint}</span>
                 </span>
               </label>
               {on && step.id === 'replace_background' && (
@@ -55,11 +60,11 @@ export function Pipeline({
                   onChange={(event) => onChange({ ...draft, prompt: event.target.value })}
                   aria-label="批量背景描述"
                   placeholder="例如：浅木色桌面，晨光"
-                  className="border-line mt-3 w-full rounded-card border px-3 py-2 text-xs outline-none"
+                  className="form-field form-field-sm animate-fade-in mt-3"
                 />
               )}
               {on && step.id === 'adjust_image' && (
-                <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="animate-fade-in mt-3 grid grid-cols-3 gap-3">
                   <Slider
                     label="亮度"
                     value={draft.brightness}
@@ -78,16 +83,16 @@ export function Pipeline({
                 </div>
               )}
               {on && step.id === 'upscale_image' && (
-                <div className="mt-3 flex gap-2">
+                <div className="animate-fade-in mt-3 flex gap-2">
                   {([2, 4] as const).map((scale) => (
                     <button
                       key={scale}
                       type="button"
                       onClick={() => onChange({ ...draft, scale })}
-                      className={`rounded-control px-3 py-2 text-xs ${
+                      className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium ${
                         draft.scale === scale
-                          ? 'bg-brand text-white'
-                          : 'border-line text-muted border'
+                          ? 'bg-ink text-white'
+                          : 'text-ink bg-black/[0.05] hover:bg-black/[0.09]'
                       }`}
                     >
                       {scale} 倍
@@ -96,16 +101,16 @@ export function Pipeline({
                 </div>
               )}
               {on && step.id === 'expand_canvas' && (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="animate-fade-in mt-3 flex flex-wrap gap-2">
                   {EXPAND_RATIOS.map((ratio) => (
                     <button
                       key={ratio}
                       type="button"
                       onClick={() => onChange({ ...draft, expandRatio: ratio })}
-                      className={`rounded-control px-3 py-2 text-xs ${
+                      className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium ${
                         draft.expandRatio === ratio
-                          ? 'bg-brand text-white'
-                          : 'border-line text-muted border'
+                          ? 'bg-ink text-white'
+                          : 'text-ink bg-black/[0.05] hover:bg-black/[0.09]'
                       }`}
                     >
                       {ratio}
@@ -114,16 +119,16 @@ export function Pipeline({
                 </div>
               )}
               {on && step.id === 'prepare_delivery_sizes' && (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="animate-fade-in mt-3 flex flex-wrap gap-2">
                   {(['1:1', '4:5', '9:16'] as const).map((ratio) => (
                     <button
                       key={ratio}
                       type="button"
                       onClick={() => toggleDelivery(ratio)}
-                      className={`rounded-control px-3 py-2 text-xs ${
+                      className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium ${
                         draft.delivery.includes(ratio)
-                          ? 'bg-brand text-white'
-                          : 'border-line text-muted border'
+                          ? 'bg-ink text-white'
+                          : 'text-ink bg-black/[0.05] hover:bg-black/[0.09]'
                       }`}
                     >
                       {ratio}
@@ -136,10 +141,10 @@ export function Pipeline({
         })}
       </ul>
 
-      <div className="mt-4 flex items-center gap-3">
-        <span className="text-muted text-xs">导出格式</span>
+      <div className="mt-5 flex items-center gap-4">
+        <span className="text-muted text-[13px]">导出格式</span>
         {(['png', 'jpg'] as const).map((fmt) => (
-          <label key={fmt} className="text-ink flex items-center gap-2 text-xs">
+          <label key={fmt} className="text-ink flex items-center gap-2 text-[13px] font-medium">
             <input
               type="checkbox"
               checked={draft.formats.includes(fmt)}
@@ -163,7 +168,7 @@ function Slider({
   onChange: (value: number) => void
 }) {
   return (
-    <label className="text-faint block text-xs">
+    <label className="text-muted block text-xs">
       {label}
       <input
         type="range"

@@ -10,7 +10,7 @@ export function SessionSwitch({ currentId }: { currentId: string }) {
     <select
       value={currentId}
       onChange={(event) => navigate(`/marketing/${event.target.value}`)}
-      className="border-line text-ink max-w-44 shrink-0 truncate rounded-control border bg-transparent px-2 py-2 text-xs"
+      className="form-field form-field-sm max-w-52 shrink-0 truncate"
       aria-label="切换会话"
     >
       {sessions.map((item) => (

@@ -54,7 +54,7 @@ export default function AgentConversation({ sessionId }: { sessionId: string }) 
   }
 
   return (
-    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-3 py-3">
+    <div className="scrollbar-slim min-h-0 flex-1 space-y-5 overflow-y-auto px-3 py-4">
       {turns.map((turn) => (
         <TurnBlock key={turn.id} turn={turn} sessionId={sessionId} />
       ))}
@@ -65,15 +65,19 @@ export default function AgentConversation({ sessionId }: { sessionId: string }) 
 
 function TurnBlock({ turn, sessionId }: { turn: Turn; sessionId: string }) {
   return (
-    <div className="space-y-2">
-      <p className="bg-brand-soft text-brand-strong ml-6 rounded-card px-3 py-2 text-xs leading-relaxed">
+    <div className="flex flex-col gap-2">
+      <p className="chat-bubble bg-ink ml-8 self-end rounded-[18px] rounded-br-md px-3.5 py-2 text-[13px] leading-relaxed text-white">
         {turn.goal}
       </p>
 
       {turn.error ? (
-        <p className="text-danger mr-6 text-xs leading-relaxed">{turn.error}</p>
+        <p className="chat-bubble text-danger bg-[var(--danger-soft)] mr-8 self-start rounded-[18px] rounded-bl-md px-3.5 py-2 text-[13px] leading-relaxed [animation-delay:120ms]">
+          {turn.error}
+        </p>
       ) : (
-        <p className="text-ink mr-6 text-xs leading-relaxed">{turn.reply}</p>
+        <p className="chat-bubble bg-soft text-ink mr-8 self-start rounded-[18px] rounded-bl-md px-3.5 py-2 text-[13px] leading-relaxed [animation-delay:120ms]">
+          {turn.reply}
+        </p>
       )}
 
       {turn.steps.map((step, index) => (
@@ -161,9 +165,9 @@ function StepCard({
   }, [status, sessionId, queryClient])
 
   return (
-    <div className="border-line mr-6 rounded-card border px-3 py-2">
+    <div className="animate-rise mr-8 rounded-[14px] px-3.5 py-2.5 shadow-[0_0_0_1px_var(--border)]">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-ink text-xs font-medium">
+        <span className="text-ink text-[13px] font-medium">
           {index}. {step.label}
         </span>
         <span className="text-faint shrink-0 text-xs tabular-nums">
@@ -173,7 +177,7 @@ function StepCard({
 
       {running && (
         <>
-          <ProgressBar value={progress} className="mt-2 h-0.5 rounded-full" />
+          <ProgressBar value={progress} className="mt-2 h-1" />
           <p className="text-faint mt-2 text-xs">{stage}</p>
         </>
       )}

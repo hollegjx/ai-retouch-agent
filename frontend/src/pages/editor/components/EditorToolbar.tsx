@@ -56,7 +56,7 @@ export default function EditorToolbar({
       <header className="editor-toolbar">
         <h1 className="sr-only">图片编辑 · {session.title}</h1>
         <input
-          className="rounded-control min-w-0 flex-1 bg-transparent px-2 py-2 font-medium hover:bg-soft focus:bg-soft"
+          className="min-w-0 flex-1 rounded-[10px] bg-transparent px-2.5 py-1.5 text-[15px] font-semibold tracking-[-0.015em] outline-none transition-[background-color,box-shadow] duration-300 hover:bg-soft focus:bg-soft focus:shadow-[0_0_0_3px_rgb(0_0_0/0.06)]"
           value={draft ?? session.title}
           maxLength={80}
           aria-label="会话标题"
@@ -102,10 +102,10 @@ export default function EditorToolbar({
       <div className="editor-toolbar">
         {ui.cropOpen ? (
           <>
-            <label className="flex items-center gap-2 text-xs">
+            <label className="animate-fade-in flex items-center gap-2 text-[13px] text-muted">
               裁剪比例
               <select
-                className="form-field w-auto"
+                className="form-field form-field-sm w-auto"
                 value={ui.cropRatio}
                 onChange={(event) =>
                   ui.setCropRatio(event.target.value as CropRatio, session.document)
@@ -141,7 +141,7 @@ export default function EditorToolbar({
             </Button>
           </>
         ) : ui.selectMode ? (
-          <>
+          <div className="animate-fade-in flex flex-wrap items-center gap-0.5">
             <Button
               size="sm"
               active={ui.selectMode === 'point'}
@@ -187,13 +187,13 @@ export default function EditorToolbar({
             <Button size="sm" disabled={!picking.selection || picking.busy} onClick={picking.clear}>
               清除
             </Button>
-            <Button size="sm" onClick={() => ui.setSelectMode(null)}>
+            <Button size="sm" variant="solid" onClick={() => ui.setSelectMode(null)}>
               完成
             </Button>
-          </>
+          </div>
         ) : (
           <>
-            <div className="editor-tool-buttons flex-wrap gap-1">
+            <div className="editor-tool-buttons animate-fade-in flex-wrap gap-0.5">
               {actions.map((item) => (
                 <Button key={item.label} size="sm" disabled={tools.busy} onClick={item.action}>
                   {item.label}
@@ -201,7 +201,7 @@ export default function EditorToolbar({
               ))}
             </div>
             <select
-              className="form-field editor-tool-select"
+              className="form-field form-field-sm editor-tool-select"
               aria-label="编辑工具"
               value=""
               disabled={tools.busy}
@@ -217,20 +217,34 @@ export default function EditorToolbar({
           </>
         )}
         <div className="ml-auto flex items-center gap-1">
-          <Button
-            variant="icon"
-            size="sm"
-            title="缩小"
-            onClick={() => view.stepZoom(1 / ZOOM_STEP)}
-          >
-            −
-          </Button>
-          <Button size="sm" title="恢复实际像素" onClick={() => view.zoomTo(1)}>
-            {Math.round(view.scale * 100)}%
-          </Button>
-          <Button variant="icon" size="sm" title="放大" onClick={() => view.stepZoom(ZOOM_STEP)}>
-            ＋
-          </Button>
+          <div className="segmented">
+            <Button
+              variant="icon"
+              size="sm"
+              title="缩小"
+              className="size-7!"
+              onClick={() => view.stepZoom(1 / ZOOM_STEP)}
+            >
+              −
+            </Button>
+            <Button
+              size="sm"
+              title="恢复实际像素"
+              className="min-h-7! min-w-14 px-2! tabular-nums"
+              onClick={() => view.zoomTo(1)}
+            >
+              {Math.round(view.scale * 100)}%
+            </Button>
+            <Button
+              variant="icon"
+              size="sm"
+              title="放大"
+              className="size-7!"
+              onClick={() => view.stepZoom(ZOOM_STEP)}
+            >
+              ＋
+            </Button>
+          </div>
           <Button size="sm" onClick={() => view.fit(session.document)}>
             适应
           </Button>

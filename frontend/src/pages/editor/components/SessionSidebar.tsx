@@ -22,19 +22,12 @@ export default function SessionSidebar({
   const [historyOpen, setHistoryOpen] = useState(!activeId)
 
   return (
-    <aside className="border-line bg-paper flex min-h-0 flex-1 flex-col border-r">
-      <div className="border-line flex items-center gap-2 border-b p-3">
-        <Link
-          to="/create"
-          className={`${buttonClass({ variant: 'outline' })} flex-1 py-2 text-center text-sm`}
-        >
+    <aside className="bg-paper flex min-h-0 flex-1 flex-col border-r border-[var(--hairline)]">
+      <div className="flex items-center gap-2 border-b border-[var(--hairline)] p-3">
+        <Link to="/create" className={`${buttonClass({ variant: 'solid', size: 'sm' })} flex-1`}>
           新建项目
         </Link>
-        <Button
-          active={historyOpen}
-          className="px-3 py-2"
-          onClick={() => setHistoryOpen((open) => !open)}
-        >
+        <Button size="sm" active={historyOpen} onClick={() => setHistoryOpen((open) => !open)}>
           历史
         </Button>
       </div>
@@ -78,7 +71,12 @@ function SessionList({ activeId, onOpen }: { activeId: string; onOpen?: () => vo
   const { data: sessions = [], isPending, isError, error, refetch } = useSessions()
 
   if (isPending) {
-    return <p className="text-faint border-line border-b px-4 py-3 text-xs">加载中…</p>
+    return (
+      <p className="text-faint flex items-center gap-2 border-b border-[var(--hairline)] px-4 py-3 text-xs">
+        <span className="spinner size-3.5 border-[1.5px]" aria-hidden />
+        加载中…
+      </p>
+    )
   }
 
   if (isError)
@@ -92,24 +90,26 @@ function SessionList({ activeId, onOpen }: { activeId: string; onOpen?: () => vo
     )
 
   if (sessions.length === 0) {
-    return <p className="text-faint border-line border-b px-4 py-3 text-xs">还没有会话</p>
+    return (
+      <p className="text-faint border-b border-[var(--hairline)] px-4 py-3 text-xs">还没有会话</p>
+    )
   }
 
   return (
-    <ul className="border-line scrollbar-slim animate-fade-in max-h-52 shrink-0 space-y-1 overflow-y-auto border-b p-2">
+    <ul className="scrollbar-slim animate-fade-in max-h-56 shrink-0 space-y-0.5 overflow-y-auto border-b border-[var(--hairline)] p-2">
       {sessions.map((session) => (
         <li key={session.id}>
           <NavLink
             to={`/editor/${session.id}`}
             onClick={onOpen}
-            className={`rounded-chip block px-3 py-2 transition-colors duration-[160ms] ${
-              session.id === activeId
-                ? 'bg-brand-soft text-brand-strong'
-                : 'text-muted hover:bg-soft hover:text-ink'
+            className={`block rounded-[10px] px-3 py-2 ${
+              session.id === activeId ? 'bg-ink text-white' : 'text-ink hover:bg-soft'
             }`}
           >
             <span className="block truncate text-xs font-medium">{session.title}</span>
-            <span className="text-faint block text-xs tabular-nums">
+            <span
+              className={`block text-xs tabular-nums ${session.id === activeId ? 'text-white/60' : 'text-faint'}`}
+            >
               {formatDateTime(session.updated_at)}
             </span>
           </NavLink>

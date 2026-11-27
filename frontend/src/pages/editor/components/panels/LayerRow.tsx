@@ -19,8 +19,8 @@ export function LayerRow({
 }) {
   return (
     <li
-      className={`rounded-control flex items-center border transition-all duration-[160ms] ${
-        active ? 'border-brand bg-brand-soft' : 'border-line hover:border-line-strong hover:bg-soft'
+      className={`flex items-center rounded-[12px] transition-[background-color,box-shadow,opacity] duration-300 ease-soft ${
+        active ? 'bg-soft shadow-[inset_0_0_0_1.5px_var(--ink)]' : 'hover:bg-soft'
       } ${layer.visible ? '' : 'opacity-50'}`}
     >
       <button
@@ -28,7 +28,7 @@ export function LayerRow({
         onClick={onSelect}
         className="flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left"
       >
-        <span className="bg-canvas border-line rounded-chip size-8 shrink-0 overflow-hidden border">
+        <span className="bg-paper size-9 shrink-0 overflow-hidden rounded-[9px] shadow-[0_0_0_1px_var(--border)]">
           {thumb ? (
             <img src={thumb.url} alt="" className="size-full object-cover" />
           ) : (

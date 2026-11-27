@@ -9,6 +9,7 @@ import { formatDateTime } from '@/lib/format'
 import { EMPTY_DRAFT, type BatchDraft, draftReady, operationsOf } from '@/lib/batch'
 import PageHeading from '@/components/PageHeading'
 import StatePanel from '@/components/ui/StatePanel'
+import { buttonClass } from '@/components/ui/buttonStyles'
 import { Pipeline } from './Pipeline'
 
 const MAX_IMAGES = 20
@@ -49,7 +50,7 @@ export function Compose() {
       <PageHeading title="批量处理" description="选择一组图片，配置处理步骤，一次完成重复工作。" />
       <div className="work-grid">
         <section className="panel">
-          <h2 className="text-ink mb-3 text-sm font-medium">选择图片</h2>
+          <h2 className="text-ink mb-4 text-[19px] font-semibold tracking-[-0.022em]">选择图片</h2>
           <ImageDropzone
             multiple
             maxFiles={MAX_IMAGES - assets.length}
@@ -58,20 +59,20 @@ export function Compose() {
             onFile={async (file) => add(await upload.mutateAsync(file))}
           />
           {assets.length > 0 && (
-            <ul className="mt-3 flex flex-wrap gap-2">
+            <ul className="mt-4 flex flex-wrap gap-3">
               {assets.map((asset) => (
-                <li key={asset.id} className="relative">
+                <li key={asset.id} className="animate-pop relative">
                   <img
                     src={asset.url}
                     alt=""
-                    className="border-line size-16 rounded-card border object-cover"
+                    className="bg-soft size-16 rounded-[14px] object-cover"
                   />
                   <button
                     type="button"
                     onClick={() =>
                       setAssets((current) => current.filter((item) => item.id !== asset.id))
                     }
-                    className="bg-brand/70 absolute -top-1 -right-1 grid size-5 place-items-center rounded-full text-xs text-white"
+                    className="bg-ink absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full text-xs text-white shadow-[0_0_0_2px_#fff] hover:scale-110"
                     aria-label="移除"
                   >
                     ×
@@ -96,9 +97,9 @@ export function Compose() {
             </div>
           )}
           {groups.length > 0 && (
-            <div className="mt-4">
-              <p className="text-faint mb-2 text-xs">从历史素材添加</p>
-              <ul className="flex flex-wrap gap-2">
+            <div className="mt-6">
+              <p className="text-muted mb-3 text-[13px]">从历史素材添加</p>
+              <ul className="stagger flex flex-wrap gap-2">
                 {groups
                   .flatMap((group) => group.assets)
                   .slice(0, 12)
@@ -113,7 +114,7 @@ export function Compose() {
                         <img
                           src={asset.url}
                           alt=""
-                          className="border-line size-14 rounded-card border object-cover hover:border-brand"
+                          className="bg-soft size-14 rounded-[12px] object-cover transition-[transform,box-shadow] duration-300 ease-soft hover:scale-105 hover:shadow-[0_0_0_2px_var(--ink)]"
                         />
                       </button>
                     </li>
@@ -128,17 +129,17 @@ export function Compose() {
         </div>
       </div>
 
-      <div className="mt-8 flex items-center gap-3">
+      <div className="mt-8 flex flex-wrap items-center gap-4">
         <button
           type="button"
           disabled={Boolean(blocked) || create.isPending}
           onClick={start}
-          className="bg-brand hover:bg-dark rounded-control px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+          className={buttonClass({ variant: 'solid' })}
         >
           {create.isPending ? '提交中…' : '开始处理'}
         </button>
-        {blocked && <p className="text-faint text-xs">{blocked}</p>}
-        {create.isError && <p className="text-danger text-xs">{errorMessage(create.error)}</p>}
+        {blocked && <p className="text-muted text-[13px]">{blocked}</p>}
+        {create.isError && <p className="text-danger text-[13px]">{errorMessage(create.error)}</p>}
       </div>
 
       {batchHistory.isPending && (
@@ -165,19 +166,19 @@ export function Compose() {
         </div>
       )}
       {history.length > 0 && (
-        <section className="mt-12">
-          <h2 className="text-ink mb-3 text-sm font-medium">最近任务</h2>
-          <ul className="space-y-2">
+        <section className="mt-14">
+          <h2 className="text-ink mb-4 text-[19px] font-semibold tracking-[-0.022em]">最近任务</h2>
+          <ul className="stagger space-y-2">
             {history.map((item) => (
               <li key={item.run.id}>
                 <Link
                   to={`/batch/${item.run.id}`}
-                  className="border-line bg-paper hover:border-brand flex items-center justify-between rounded-card border px-4 py-3"
+                  className="lift bg-paper flex items-center justify-between rounded-[16px] px-5 py-4"
                 >
-                  <span className="text-ink text-sm">
+                  <span className="text-ink text-[15px] font-medium">
                     {item.items.length} 张 · {item.run.stage || item.run.status}
                   </span>
-                  <span className="text-faint text-xs tabular-nums">
+                  <span className="text-muted text-[13px] tabular-nums">
                     {formatDateTime(item.created_at)}
                   </span>
                 </Link>

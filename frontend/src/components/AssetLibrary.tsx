@@ -21,30 +21,34 @@ export default function AssetLibrary({
         const open = () =>
           group.session_id ? onOpenSession(group.session_id) : onOpenAsset(group.cover.id)
         return (
-          <li key={key} className="project-card">
+          <li key={key} className="project-card lift">
             <button
               type="button"
               onClick={open}
               disabled={disabled}
-              className="block w-full text-left hover:bg-soft"
+              className="block w-full overflow-hidden text-left active:[transform:scale(0.985)]"
             >
-              <img
-                src={group.cover.url}
-                alt={group.title}
-                loading="lazy"
-                className="project-cover"
-              />
-              <div className="border-t border-line p-4">
-                <h3 className="truncate font-medium">{group.title}</h3>
-                <p className="mt-2 text-xs text-muted">
+              <span className="block overflow-hidden">
+                <img
+                  src={group.cover.url}
+                  alt={group.title}
+                  loading="lazy"
+                  className="project-cover zoom-media"
+                />
+              </span>
+              <div className="px-5 pt-4 pb-5">
+                <h3 className="truncate text-[15px] font-semibold tracking-[-0.015em]">
+                  {group.title}
+                </h3>
+                <p className="mt-1 text-[13px] text-muted">
                   {group.assets.length} 张 · {formatDateTime(group.updated_at)}
                 </p>
               </div>
             </button>
             {group.assets.length > 1 && (
-              <div className="px-4 pb-4">
+              <div className="px-5 pb-5">
                 <button
-                  className="text-xs text-muted hover:text-ink"
+                  className="text-[13px] text-muted hover:text-ink"
                   type="button"
                   aria-expanded={expanded === key}
                   onClick={() => setExpanded(expanded === key ? null : key)}
@@ -52,7 +56,7 @@ export default function AssetLibrary({
                   {expanded === key ? '收起素材 ↑' : '查看素材 ↓'}
                 </button>
                 {expanded === key && (
-                  <div className="mt-4 grid grid-cols-3 gap-2">
+                  <div className="stagger mt-4 grid grid-cols-3 gap-2">
                     {group.assets.map((asset) => (
                       <button
                         type="button"
@@ -63,7 +67,7 @@ export default function AssetLibrary({
                         }
                       >
                         <img
-                          className="aspect-square w-full rounded-chip bg-soft object-contain"
+                          className="aspect-square w-full rounded-chip bg-soft object-contain transition-transform duration-500 ease-soft hover:scale-[1.04]"
                           src={asset.url}
                           alt={`${asset.width} × ${asset.height} 素材`}
                           loading="lazy"

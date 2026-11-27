@@ -5,7 +5,7 @@
 - 后端：routers 做 HTTP 适配，schemas 做字段校验与响应模型，services 做业务、归属与事务，repositories 放复杂 / 复用查询。业务异常通过 exceptions 和 error_handlers 映射。
 - 保持现有 REST、UUID、HTTP 状态、原始成功响应、JWT HttpOnly Cookie、SSE 和下载协议。数据库迁移另行设计。
 - 前端：请求统一走 request → service/api，协议类型放 types，页面放 pages/<业务>，局部组件跟随页面。严格 TypeScript，不用 any 或 ts-ignore。
-- 视觉：松绿 · 工具，石墨主色，统一 CSS token、8/8/12px 圆角、36px 控件、160ms 动效。无渐变和装饰阴影，最小文字 12px，390px 无页面横向溢出。
+- 视觉：黑白 · 简约，近黑主色、浅灰画布、白色卡片，统一 CSS token、胶囊按钮、18/24px 卡片圆角、减速与回弹动效（尊重减少动态效果偏好）。详见 `docs/design.md`；390px 无页面横向溢出。
 - 验证：backend 中运行 `uv run pytest -q`、Ruff 检查与格式检查；frontend 中运行 type-check、lint、test、build、test:e2e。e2e 在 5175 完全拦截 API / SSE，结束后关闭。
 - 默认单测不访问网络。集成测试必须显式开启并使用独立资源；不把真实数据库当测试库。服务由用户启动，真实环境由用户验收。
 - 用户已授权按需安装本项目必要的工具链、依赖与模型文件，无需逐项确认安装。

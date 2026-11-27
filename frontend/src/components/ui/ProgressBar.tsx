@@ -1,5 +1,6 @@
 /**
- * 进度值本身已经是逐帧动画，所以条体不再加 CSS 过渡，否则两层插值叠起来会拖影。
+ * 进度值本身已经是逐帧动画，所以条体不再加宽度过渡，否则两层插值叠起来会拖影。
+ * 填充上扫过的高光只是装饰，不改变进度含义。
  */
 export default function ProgressBar({
   value,
@@ -18,10 +19,10 @@ export default function ProgressBar({
       aria-valuenow={Math.round(clamped)}
       aria-valuemin={0}
       aria-valuemax={100}
-      className={`bg-line overflow-hidden ${className}`}
+      className={`overflow-hidden rounded-full bg-black/[0.08] ${className}`}
     >
       <div
-        className={`h-full ${tone === 'brand' ? 'bg-brand-strong' : 'bg-brand'}`}
+        className={`progress-fill h-full rounded-full ${tone === 'brand' ? 'bg-brand-strong' : 'bg-brand'}`}
         style={{ width: `${Math.max(clamped, 2)}%` }}
       />
     </div>

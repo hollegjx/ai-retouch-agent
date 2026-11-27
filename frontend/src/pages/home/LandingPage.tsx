@@ -1,7 +1,10 @@
+import { useRef } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import PageHeading from '@/components/PageHeading'
+import ParticleField from '@/components/ParticleField'
+import Reveal from '@/components/Reveal'
 import { buttonClass } from '@/components/ui/buttonStyles'
 import { useCurrentUser } from '@/hooks/useAuth'
+import HeroDemo from '@/pages/home/components/HeroDemo'
 
 const entries = [
   {
@@ -26,32 +29,73 @@ const entries = [
 
 export default function LandingPage() {
   const { user } = useCurrentUser()
+  const flow = useRef<HTMLElement>(null)
   if (user) return <Navigate to="/create" replace />
   return (
-    <div className="page">
-      <PageHeading title="图片工作台" description="把生成、编辑与交付放在同一个工作空间。" />
-      <section className="panel mb-8">
-        <div className="section-heading">
-          <h2>开始一个项目</h2>
-          <span className="text-xs text-muted">JPG / PNG / WebP</span>
-        </div>
-        <p className="text-muted mb-6 leading-relaxed">
-          登录后上传一张图片，或从一段画面描述开始。素材和编辑记录会保存在你的账号中。
-        </p>
-        <Link to="/auth" className={buttonClass({ variant: 'solid' })}>
-          开始创作
-        </Link>
-      </section>
-      <div className="grid gap-4 lg:grid-cols-3">
-        {entries.map((entry) => (
-          <Link key={entry.to} to={entry.to} className="panel hover:border-brand">
-            <span className="text-xs text-muted">{entry.number}</span>
-            <h2 className="mt-4 mb-2 text-base font-semibold">{entry.title}</h2>
-            <p className="text-muted leading-relaxed">{entry.hint}</p>
-            <span className="mt-6 block text-xs">打开工具 →</span>
+    <div className="landing">
+      <section className="landing-hero">
+        <ParticleField className="hero-particles" density={0.8} />
+        <p className="hero-eyebrow hero-in hero-in-1">AI 修图智能体</p>
+        <h1 className="hero-title hero-in hero-in-2">图片工作台</h1>
+        <p className="hero-sub hero-in hero-in-3">把生成、编辑与交付放在同一个工作空间。</p>
+        <div className="hero-cta hero-in hero-in-4">
+          <Link to="/auth" className={buttonClass({ variant: 'solid' })}>
+            开始创作
           </Link>
-        ))}
-      </div>
+          <button
+            type="button"
+            className="text-link"
+            onClick={() => flow.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          >
+            了解流程 <span className="chev">›</span>
+          </button>
+        </div>
+        <HeroDemo />
+      </section>
+
+      <section className="landing-dark" ref={flow}>
+        <ParticleField tone="paper" className="dark-particles" density={0.75} linkOpacity={0.22} />
+        <Reveal className="mx-auto max-w-[1120px]">
+          <p className="section-kicker">工作流程</p>
+          <h2 className="section-title">
+            从一张素材，
+            <br />
+            到完整交付。
+          </h2>
+        </Reveal>
+        <div className="step-grid">
+          {entries.map((entry, index) => (
+            <Reveal key={entry.to} delay={index * 120} className="h-full">
+              <Link to={entry.to} className="step-card h-full">
+                <span className="step-num">{entry.number}</span>
+                <h3>{entry.title}</h3>
+                <p>{entry.hint}</p>
+                <span className="text-link">
+                  打开工具 <span className="chev">›</span>
+                </span>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-close">
+        <ParticleField className="close-particles" density={0.6} />
+        <Reveal>
+          <h2 className="section-title">现在开始。</h2>
+          <p className="hero-sub">
+            登录后上传一张图片，或从一段画面描述开始。素材和编辑记录会保存在你的账号中。
+          </p>
+          <div className="hero-cta">
+            <Link to="/auth" className={buttonClass({ variant: 'solid' })}>
+              开始创作
+            </Link>
+            <span className="text-faint text-[13px]">JPG / PNG / WebP</span>
+          </div>
+        </Reveal>
+      </section>
+
+      <footer className="landing-foot">AI 修图智能体 · 生成 · 编辑 · 导出</footer>
     </div>
   )
 }

@@ -18,7 +18,7 @@ export default function GenerateForm({
   const [negative, setNegative] = useState('')
   return (
     <form
-      className="space-y-4"
+      className="space-y-5"
       onSubmit={(event) => {
         event.preventDefault()
         if (!prompt.trim() || pending) return
@@ -33,7 +33,7 @@ export default function GenerateForm({
       <label className="block">
         <span className="form-label">画面描述</span>
         <textarea
-          className="form-field min-h-32 resize-y leading-relaxed"
+          className="form-field min-h-36 resize-y text-[15px] leading-relaxed"
           rows={4}
           value={prompt}
           maxLength={1500}
@@ -72,8 +72,8 @@ export default function GenerateForm({
           </select>
         </label>
       </div>
-      <details className="text-muted text-xs">
-        <summary className="cursor-pointer">排除内容（可选）</summary>
+      <details className="text-muted text-[13px]">
+        <summary className="cursor-pointer hover:text-ink">排除内容（可选）</summary>
         <input
           className="form-field mt-2"
           aria-label="排除内容"
@@ -83,8 +83,8 @@ export default function GenerateForm({
           placeholder="不希望出现的内容，例如文字、水印"
         />
       </details>
-      <div className="flex items-center justify-between gap-4 border-t border-line pt-4">
-        <p className="text-xs text-muted">生成后选择一张进入编辑</p>
+      <div className="flex items-center justify-between gap-4 border-t border-line pt-5">
+        <p className="text-[13px] text-muted">生成后选择一张进入编辑</p>
         <button
           type="submit"
           className={buttonClass({ variant: 'solid' })}

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import AssetLibrary from '@/components/AssetLibrary'
 import ProgressBar from '@/components/ui/ProgressBar'
+import { buttonClass } from '@/components/ui/buttonStyles'
 import { errorMessage } from '@/utils/errors'
 import { useAssetLibrary } from '@/hooks/useAssets'
 import { useCreateSession, useExportPack, useSession, useSessionTools } from '@/hooks/useSessions'
@@ -30,7 +31,7 @@ function Picker() {
   return (
     <div className="page">
       <PageTitle />
-      <h2 className="text-muted mb-3 text-sm font-medium">选择会话</h2>
+      <h2 className="mb-5 text-[19px] font-semibold tracking-[-0.022em]">选择会话</h2>
       {isPending ? (
         <StatePanel title="正在读取素材" loading />
       ) : isError ? (
@@ -41,9 +42,9 @@ function Picker() {
           onRetry={() => void refetch()}
         />
       ) : groups.length === 0 ? (
-        <p className="text-faint text-sm">
+        <p className="text-muted text-[15px]">
           还没有可导出的会话，先到
-          <Link to="/create" className="text-brand-strong mx-1">
+          <Link to="/create" className="mx-1 font-medium text-ink underline underline-offset-4">
             创作
           </Link>
           打开一张图。
@@ -133,31 +134,31 @@ function Workspace({ sessionId }: { sessionId: string }) {
     <div className="page">
       <PageTitle
         action={
-          <Link
-            to={`/editor/${sessionId}`}
-            className="border-line text-muted hover:bg-soft hover:text-ink shrink-0 rounded-control border px-3 py-2 text-xs font-medium"
-          >
+          <Link to={`/editor/${sessionId}`} className={buttonClass({ variant: 'outline' })}>
             回编辑器
           </Link>
         }
       />
 
-      <section className="panel mb-6 flex flex-wrap items-center gap-4">
-        <div className="bg-canvas border-line size-20 shrink-0 overflow-hidden rounded-card border">
+      <section className="panel mb-5 flex flex-wrap items-center gap-5 py-5">
+        <div className="bg-soft size-20 shrink-0 overflow-hidden rounded-[16px]">
           {current && <img src={current.url} alt="" className="size-full object-contain" />}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-ink truncate text-sm font-medium" title={session.title}>
+          <p
+            className="text-ink truncate text-[17px] font-semibold tracking-[-0.02em]"
+            title={session.title}
+          >
             {shortTitle(session.title, 28)}
           </p>
-          <p className="text-faint mt-1 text-xs tabular-nums">
+          <p className="text-muted mt-1 text-[13px] tabular-nums">
             画布 {session.document.width} × {session.document.height}
           </p>
         </div>
         <SessionSwitch currentId={sessionId} />
       </section>
 
-      <div className="work-grid mb-8">
+      <div className="work-grid mb-14">
         <section className="panel">
           <SectionHead title="生成营销图" hint="以当前画布为参考生成，结果进图片墙，不改画布。" />
           <input
@@ -166,9 +167,9 @@ function Workspace({ sessionId }: { sessionId: string }) {
             onChange={(event) => setCopy(event.target.value)}
             disabled={tools.busy}
             placeholder="可选：海报文案或补充要求，例如「新品首发 限时 8 折」"
-            className="border-line text-ink placeholder:text-faint rounded-control mb-3 w-full border px-3 py-2 text-sm outline-none"
+            className="form-field mb-4"
           />
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-2">
+          <div className="stagger grid grid-cols-2 gap-3 lg:grid-cols-2">
             {MARKETING_KINDS.map((item) => (
               <KindCard
                 key={item.id}
@@ -197,7 +198,7 @@ function Workspace({ sessionId }: { sessionId: string }) {
               type="button"
               disabled={tools.busy}
               onClick={() => tools.invoke('prepare_delivery_sizes')}
-              className="bg-brand hover:bg-dark rounded-control px-4 py-2 text-xs font-medium text-white disabled:opacity-40"
+              className={buttonClass({ variant: 'solid', size: 'sm' })}
             >
               {deliveryRunning() ? '生成中…' : '生成 1:1 / 4:5 / 9:16'}
             </button>
@@ -207,27 +208,23 @@ function Workspace({ sessionId }: { sessionId: string }) {
                 type="button"
                 disabled={tools.busy}
                 onClick={() => tools.invoke('prepare_delivery_sizes', { ratios: [ratio.value] })}
-                className="border-line text-muted hover:text-ink rounded-control border px-3 py-2 text-xs disabled:opacity-40"
+                className={buttonClass({ variant: 'outline', size: 'sm' })}
               >
                 {ratio.label}
-                <span className="text-faint ml-1">
+                <span className="text-faint">
                   {deliveryRunning(ratio.value) ? '生成中…' : ratio.size}
                 </span>
               </button>
             ))}
           </div>
           {tools.busy && (
-            <div className="mt-2">
-              <p className="text-muted text-xs">
+            <div className="animate-fade-in mt-4">
+              <p className="text-muted text-[13px]">
                 {tools.pendingStage || '处理中'}
                 {tools.pending ? ` · ${tools.pendingProgress}%` : ''}
               </p>
               {tools.pending && (
-                <ProgressBar
-                  value={tools.pendingProgress}
-                  tone="brand"
-                  className="mt-2 h-0.5 w-48 rounded-full"
-                />
+                <ProgressBar value={tools.pendingProgress} tone="brand" className="mt-2 h-1 w-56" />
               )}
             </div>
           )}

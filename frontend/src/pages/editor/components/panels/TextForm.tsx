@@ -4,8 +4,7 @@ import type { Layer } from '@/types/sessions'
 import { useEditorUi } from '@/stores/editorUi'
 import { SliderField } from './SliderField'
 
-const TEXT_FIELD =
-  'border-line text-ink placeholder:text-faint rounded-control focus:border-line-strong w-full resize-none border px-3 py-2 text-xs leading-relaxed outline-none'
+const TEXT_FIELD = 'form-field form-field-sm resize-none leading-relaxed'
 
 function toHex6(value: string) {
   const raw = value.replace('#', '')
@@ -89,7 +88,7 @@ export function TextForm({
           type="color"
           value={fill}
           disabled={disabled}
-          className="border-line h-7 w-12 cursor-pointer rounded border bg-transparent p-0"
+          className="size-7 cursor-pointer overflow-hidden rounded-full border-0 bg-transparent p-0 shadow-[0_0_0_1px_var(--border-strong)]"
           onChange={(event) => {
             const next = event.target.value
             setFill(next)

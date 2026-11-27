@@ -20,7 +20,7 @@ type ToastsState = {
   dismiss: (id: number) => void
 }
 
-const LEAVE_MS = 180
+const LEAVE_MS = 220
 const STAY_MS = 3200
 // 带撤销入口的提示要留够反应时间
 const STAY_WITH_ACTION_MS = 5200

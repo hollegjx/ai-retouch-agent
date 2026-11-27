@@ -25,12 +25,14 @@ export default function EditorPage() {
     // 编辑器自成一屏：不让工具条或画布把外层 main 撑出滚动条，否则画布会被滚出视口
     <div className="editor-shell">
       <div className="editor-tabs">
-        <Button size="sm" active={!chatOpen} onClick={() => setChatOpen(false)}>
-          画布
-        </Button>
-        <Button size="sm" active={chatOpen} onClick={() => setChatOpen(true)}>
-          AI 对话 / 历史
-        </Button>
+        <div className="segmented">
+          <Button size="sm" active={!chatOpen} onClick={() => setChatOpen(false)}>
+            画布
+          </Button>
+          <Button size="sm" active={chatOpen} onClick={() => setChatOpen(true)}>
+            AI 对话 / 历史
+          </Button>
+        </div>
       </div>
       <div className="editor-body">
         <div className={`editor-ai ${chatOpen ? 'is-open' : ''}`}>
@@ -160,12 +162,19 @@ function Workspace({ sessionId }: { sessionId: string }) {
           onRename={(title) => patch.mutate({ title })}
         />
         {patch.isError && (
-          <p role="alert" className="bg-paper px-4 py-2 text-danger">
+          <p
+            role="alert"
+            className="animate-fade-in bg-[var(--danger-soft)] px-4 py-2 text-sm text-danger"
+          >
             {errorMessage(patch.error)}
           </p>
         )}
         {tools.pending && (
-          <ProgressBar value={tools.pendingProgress} tone="brand" className="h-0.5 shrink-0" />
+          <ProgressBar
+            value={tools.pendingProgress}
+            tone="brand"
+            className="h-0.5 shrink-0 rounded-none!"
+          />
         )}
 
         <div className="relative flex min-h-0 min-w-0 flex-1">
@@ -253,7 +262,7 @@ function canvasHint({
 
 function CreateLink() {
   return (
-    <Link to="/create" className={`${buttonClass({ variant: 'solid' })} mt-6 px-4 py-2 text-sm`}>
+    <Link to="/create" className={`${buttonClass({ variant: 'solid' })} mt-6`}>
       去创作
     </Link>
   )
@@ -269,9 +278,9 @@ function Notice({
   children?: React.ReactNode
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-      <h1 className="text-ink text-base font-semibold">{title}</h1>
-      <p className="text-muted mt-1 max-w-sm text-sm">{hint}</p>
+    <div className="animate-rise flex flex-1 flex-col items-center justify-center px-8 text-center">
+      <h1 className="text-ink text-[24px] font-semibold tracking-[-0.025em]">{title}</h1>
+      <p className="text-muted mt-2 max-w-sm text-[15px] leading-relaxed">{hint}</p>
       {children}
     </div>
   )

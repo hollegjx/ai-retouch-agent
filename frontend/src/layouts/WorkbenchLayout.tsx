@@ -1,5 +1,7 @@
+import { Suspense, useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import BrandMark from '@/components/BrandMark'
+import ParticleField from '@/components/ParticleField'
 import ToastHost from '@/components/ToastHost'
 import Button from '@/components/ui/Button'
 import { buttonClass } from '@/components/ui/buttonStyles'
@@ -19,7 +21,8 @@ export default function WorkbenchLayout() {
   const location = useLocation()
   const { user } = useCurrentUser()
   const { logout } = useAuthActions()
-  const current = NAV_ITEMS.find((item) => location.pathname.startsWith(item.to))
+  // 只按一级路径换场：同一功能内切换会话不重播入场，也不重建页面状态
+  const section = location.pathname.split('/')[1] || 'home'
   const signOut = () => {
     if (logout.isPending) return
     logout.mutate(undefined, {
@@ -29,14 +32,95 @@ export default function WorkbenchLayout() {
   }
   return (
     <div className="app-shell">
-      <nav className="app-nav" aria-label="工作台导航">
-        <Link to="/" className="app-brand">
+      <header className="app-topbar">
+        <Link to="/" className="app-brand" aria-label="AI 修图首页">
           <BrandMark size="sm">
-            <span className="font-semibold">AI 修图</span>
+            <span className="text-[15px] font-semibold tracking-[-0.02em]">AI 修图</span>
           </BrandMark>
         </Link>
-        <p className="app-nav-caption">图片工作空间</p>
-        <ul className="nav-items">
+        <div className="app-account">
+          {user ? (
+            <>
+              <span className="app-avatar" aria-hidden>
+                {user.username.slice(0, 1)}
+              </span>
+              <span className="text-muted hidden max-w-28 truncate text-[13px] sm:inline">
+                {user.username}
+              </span>
+              <Button size="sm" disabled={logout.isPending} onClick={signOut}>
+                {logout.isPending ? '退出中' : '退出'}
+              </Button>
+            </>
+          ) : (
+            <Link to="/auth" className={buttonClass({ variant: 'solid', size: 'sm' })}>
+              登录
+            </Link>
+          )}
+        </div>
+      </header>
+      <NavTrack pathname={location.pathname} />
+      {/* 首页自带粒子；编辑器是工作区，不加背景动效 */}
+      {section !== 'home' && section !== 'editor' && (
+        <ParticleField className="app-backdrop" density={0.5} linkOpacity={0.11} />
+      )}
+      <main className="app-main" id="main">
+        <div key={section} className="route-view">
+          <Suspense
+            fallback={
+              <div className="route-fallback" role="status" aria-label="正在打开">
+                <span className="spinner" />
+              </div>
+            }
+          >
+            <Outlet />
+          </Suspense>
+        </div>
+      </main>
+      <ToastHost />
+    </div>
+  )
+}
+
+/** 分段式导航：白色滑块按当前项的位置和宽度弹性移动。 */
+function NavTrack({ pathname }: { pathname: string }) {
+  const track = useRef<HTMLDivElement>(null)
+  const [indicator, setIndicator] = useState<{ x: number; width: number } | null>(null)
+  const [animate, setAnimate] = useState(false)
+
+  const measure = useCallback(() => {
+    const active = track.current?.querySelector<HTMLElement>('a.active')
+    setIndicator(active ? { x: active.offsetLeft, width: active.offsetWidth } : null)
+  }, [])
+
+  useLayoutEffect(() => {
+    measure()
+    // 首次定位不做动画，之后的切换才滑动
+    const frame = requestAnimationFrame(() => setAnimate(true))
+    return () => cancelAnimationFrame(frame)
+  }, [pathname, measure])
+
+  useLayoutEffect(() => {
+    const element = track.current
+    if (!element) return
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [measure])
+
+  return (
+    <nav className="app-nav" aria-label="工作台导航">
+      <div className="nav-items" ref={track}>
+        <span
+          className="nav-indicator"
+          data-animate={animate}
+          aria-hidden
+          style={{
+            width: indicator?.width ?? 0,
+            transform: `translateX(${indicator?.x ?? 0}px)`,
+            opacity: indicator ? 1 : 0,
+          }}
+        />
+        <ul>
           {NAV_ITEMS.map((item) => (
             <li key={item.to}>
               <NavLink
@@ -47,7 +131,7 @@ export default function WorkbenchLayout() {
                   <path
                     d={item.icon}
                     stroke="currentColor"
-                    strokeWidth="1.6"
+                    strokeWidth="1.7"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
@@ -57,44 +141,7 @@ export default function WorkbenchLayout() {
             </li>
           ))}
         </ul>
-        <div className="nav-account">
-          <p className="text-xs text-muted leading-relaxed">
-            从一张素材到完整交付
-            <br />
-            生成 · 编辑 · 导出
-          </p>
-        </div>
-      </nav>
-      <div className="app-body">
-        <header className="app-header">
-          <div className="flex items-center gap-2">
-            <span className="text-muted text-xs">工作空间</span>
-            <span className="text-muted" aria-hidden>
-              /
-            </span>
-            <span className="font-medium">
-              {current?.label ??
-                (location.pathname.startsWith('/candidates') ? '生成结果' : '开始创作')}
-            </span>
-          </div>
-          {user ? (
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="max-w-24 truncate text-xs text-muted">{user.username}</span>
-              <Button size="sm" disabled={logout.isPending} onClick={signOut}>
-                {logout.isPending ? '退出中' : '退出'}
-              </Button>
-            </div>
-          ) : (
-            <Link to="/auth" className={buttonClass({ variant: 'outline', size: 'sm' })}>
-              登录
-            </Link>
-          )}
-        </header>
-        <main className="app-main" id="main">
-          <Outlet />
-        </main>
       </div>
-      <ToastHost />
-    </div>
+    </nav>
   )
 }

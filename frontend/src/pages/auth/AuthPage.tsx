@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import BrandMark from '@/components/BrandMark'
+import ParticleField from '@/components/ParticleField'
 import StatePanel from '@/components/ui/StatePanel'
 import { buttonClass } from '@/components/ui/buttonStyles'
 import { useAuthActions, useCurrentUser } from '@/hooks/useAuth'
@@ -21,20 +22,23 @@ export default function AuthPage() {
   if (!isLoading && user) return <Navigate to={target} replace />
   return (
     <div className="auth-page">
+      <ParticleField className="auth-particles" density={0.7} />
       <div className="auth-card">
-        <Link to="/" className="mb-6 inline-block text-sm text-muted">
-          ← 返回工作台
+        <Link to="/" className="text-link mb-6 text-sm text-muted hover:text-ink">
+          <span className="chev">‹</span> 返回工作台
         </Link>
-        <section className="panel">
-          <BrandMark size="sm">
-            <span className="font-semibold">AI 修图</span>
-          </BrandMark>
-          <h1 className="mt-8 text-xl font-semibold">{registering ? '创建账号' : '欢迎回来'}</h1>
-          <p className="mt-2 text-sm text-muted">
-            {registering ? '保存素材、编辑记录和每一次创作。' : '登录后继续你的图片项目。'}
-          </p>
+        <section className="auth-panel">
+          <BrandMark size="lg" />
+          <div key={registering ? 'register' : 'login'} className="auth-swap">
+            <h1 className="mt-7 text-[32px] leading-tight font-bold tracking-[-0.035em]">
+              {registering ? '创建账号' : '欢迎回来'}
+            </h1>
+            <p className="mt-2 text-[15px] text-muted">
+              {registering ? '保存素材、编辑记录和每一次创作。' : '登录后继续你的图片项目。'}
+            </p>
+          </div>
           {error && (
-            <div className="mt-4">
+            <div className="mt-5">
               <StatePanel
                 title="服务连接失败"
                 description={errorMessage(error)}
@@ -44,7 +48,7 @@ export default function AuthPage() {
             </div>
           )}
           <form
-            className="mt-6 space-y-4"
+            className="mt-8 space-y-4"
             onSubmit={(event) => {
               event.preventDefault()
               if (action.isPending) return
@@ -57,7 +61,7 @@ export default function AuthPage() {
             <label className="block">
               <span className="form-label">用户名</span>
               <input
-                className="form-field"
+                className="form-field min-h-12 text-[15px]"
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
                 required
@@ -73,7 +77,7 @@ export default function AuthPage() {
             <label className="block">
               <span className="form-label">密码</span>
               <input
-                className="form-field"
+                className="form-field min-h-12 text-[15px]"
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -86,22 +90,31 @@ export default function AuthPage() {
               />
             </label>
             {action.isError && (
-              <p className="text-danger text-sm" role="alert">
+              <p className="text-danger animate-fade-in text-sm" role="alert">
                 {errorMessage(action.error)}
               </p>
             )}
             <button
               type="submit"
-              className={buttonClass({ variant: 'solid', block: true })}
+              className={`${buttonClass({ variant: 'solid', block: true })} min-h-12! text-[15px]!`}
               disabled={action.isPending}
             >
-              {action.isPending ? '处理中…' : registering ? '创建账号' : '登录'}
+              {action.isPending ? (
+                <>
+                  <span className="spinner size-4 border-white/30 border-t-white" aria-hidden />
+                  处理中…
+                </>
+              ) : registering ? (
+                '创建账号'
+              ) : (
+                '登录'
+              )}
             </button>
           </form>
           <button
             type="button"
             disabled={action.isPending}
-            className="mt-6 text-sm text-muted hover:text-ink"
+            className="mt-6 w-full text-center text-sm text-muted hover:text-ink"
             onClick={() => {
               login.reset()
               register.reset()

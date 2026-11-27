@@ -30,7 +30,9 @@ export default function CreatePage() {
         <section className="panel">
           <div className="section-heading">
             <h2>描述画面</h2>
-            <span className="text-xs text-muted">AI 生成</span>
+            <span className="rounded-full bg-soft px-2.5 py-1 text-xs font-medium text-muted">
+              AI 生成
+            </span>
           </div>
           <GenerateForm
             defaultPrompt={readPromptDraft()}
@@ -45,7 +47,7 @@ export default function CreatePage() {
             }
           />
           {generate.isError && (
-            <p role="alert" className="mt-4 text-danger">
+            <p role="alert" className="animate-fade-in mt-4 text-sm text-danger">
               {errorMessage(generate.error)}
             </p>
           )}
@@ -53,9 +55,11 @@ export default function CreatePage() {
         <section className="panel flex flex-col">
           <div className="section-heading">
             <h2>导入图片</h2>
-            <span className="text-xs text-muted">已有素材</span>
+            <span className="rounded-full bg-soft px-2.5 py-1 text-xs font-medium text-muted">
+              已有素材
+            </span>
           </div>
-          <p className="text-muted mb-6 leading-relaxed">
+          <p className="text-muted mb-6 text-[15px] leading-relaxed">
             上传产品图、照片或设计稿，在编辑器中继续精修。
           </p>
           <ImageDropzone
@@ -63,11 +67,11 @@ export default function CreatePage() {
             disabled={upload.isPending || createSession.isPending}
           />
           {upload.isError && (
-            <p role="alert" className="mt-4 text-danger">
+            <p role="alert" className="animate-fade-in mt-4 text-sm text-danger">
               {errorMessage(upload.error)}
             </p>
           )}
-          <p className="mt-6 text-xs leading-relaxed text-muted">
+          <p className="mt-auto pt-6 text-[13px] leading-relaxed text-muted">
             原图会保留在素材库。编辑器支持 AI 指令、图层调整、选区与撤销。
           </p>
         </section>
@@ -87,7 +91,7 @@ export default function CreatePage() {
       <section>
         <div className="section-heading">
           <h2>最近素材</h2>
-          <span className="text-muted text-xs">按最近编辑排序</span>
+          <span className="text-muted text-[13px]">按最近编辑排序</span>
         </div>
         {library.isPending ? (
           <StatePanel title="正在读取素材" loading />

@@ -11,9 +11,9 @@ export function PageTitle({ action }: { action?: ReactNode }) {
 
 export function SectionHead({ title, hint }: { title: string; hint: string }) {
   return (
-    <div className="mb-3">
-      <h2 className="text-ink text-base font-semibold">{title}</h2>
-      <p className="text-faint mt-1 text-xs">{hint}</p>
+    <div className="mb-5">
+      <h2 className="text-ink text-[19px] font-semibold tracking-[-0.022em]">{title}</h2>
+      <p className="text-muted mt-1 text-[13px] leading-relaxed">{hint}</p>
     </div>
   )
 }

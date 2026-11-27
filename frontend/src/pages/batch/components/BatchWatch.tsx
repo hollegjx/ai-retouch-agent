@@ -5,6 +5,7 @@ import { useBatch, useExportBatch } from '@/hooks/useBatch'
 import { errorMessage } from '@/utils/errors'
 import PageHeading from '@/components/PageHeading'
 import StatePanel from '@/components/ui/StatePanel'
+import { buttonClass } from '@/components/ui/buttonStyles'
 import { saveDownload } from '@/utils/download'
 import { toast } from '@/stores/toasts'
 
@@ -39,27 +40,26 @@ export function Watch({ runId }: { runId: string }) {
 
   return (
     <div className="page">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-ink text-[28px] font-semibold tracking-tight">批量进度</h1>
-          <p className="text-muted mt-1 text-sm">
+          <h1 className="text-ink text-[clamp(32px,3.6vw,48px)] leading-[1.08] font-bold tracking-[-0.035em]">
+            批量进度
+          </h1>
+          <p className="text-muted mt-3 text-[17px] tabular-nums">
             {live.stage || '处理中'}
             {done ? '' : ` · ${live.progress}%`}
           </p>
-          {!done && <ProgressBar value={live.progress} className="mt-2 h-0.5 w-64 rounded-full" />}
+          {!done && <ProgressBar value={live.progress} className="mt-4 h-1.5 w-72 max-w-full" />}
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            to="/batch"
-            className="border-line text-muted hover:text-ink rounded-control border px-3 py-2 text-xs font-medium"
-          >
+          <Link to="/batch" className={buttonClass({ variant: 'outline' })}>
             新任务
           </Link>
           <button
             type="button"
             disabled={!done || succeeded === 0 || pack.isPending}
             onClick={download}
-            className="bg-brand hover:bg-dark rounded-control px-4 py-2 text-xs font-medium text-white disabled:opacity-40"
+            className={buttonClass({ variant: 'solid' })}
           >
             {pack.isPending ? '打包中…' : '打包下载'}
           </button>
@@ -69,21 +69,21 @@ export function Watch({ runId }: { runId: string }) {
       {live.error && <p className="text-danger mb-3 text-sm">{live.error}</p>}
       {pack.isError && <p className="text-danger mb-3 text-sm">{errorMessage(pack.error)}</p>}
 
-      <ul className="space-y-3">
+      <ul className="stagger space-y-3">
         {(data?.items ?? []).map((item) => (
-          <li
-            key={item.source.id}
-            className="border-line bg-paper flex items-center gap-4 rounded-card border p-3"
-          >
+          <li key={item.source.id} className="bg-paper flex items-center gap-5 rounded-[20px] p-4">
             <img
               src={item.source.url}
               alt=""
-              className="bg-canvas size-16 shrink-0 rounded-card object-contain"
+              className="bg-soft size-16 shrink-0 rounded-[14px] object-contain"
             />
             <div className="min-w-0 flex-1">
-              <p className="text-ink text-sm">{statusLabel(item.status)}</p>
+              <p className="text-ink flex items-center gap-2 text-[15px] font-medium">
+                <StatusDot status={item.status} />
+                {statusLabel(item.status)}
+              </p>
               {item.error && <p className="text-danger mt-1 text-xs">{item.error}</p>}
-              <p className="text-faint mt-1 text-xs tabular-nums">
+              <p className="text-muted mt-1 text-[13px] tabular-nums">
                 {item.source.width} × {item.source.height}
                 {item.outputs.length ? ` → ${item.outputs.length} 张结果` : ''}
               </p>
@@ -94,7 +94,7 @@ export function Watch({ runId }: { runId: string }) {
                   key={output.id}
                   src={output.url}
                   alt=""
-                  className="border-line size-12 rounded-card border object-cover"
+                  className="animate-pop bg-soft size-12 rounded-[12px] object-cover"
                 />
               ))}
             </div>
@@ -102,6 +102,18 @@ export function Watch({ runId }: { runId: string }) {
         ))}
       </ul>
     </div>
+  )
+}
+
+function StatusDot({ status }: { status: string }) {
+  if (status === 'running') return <span className="spinner size-3.5 border-[1.5px]" aria-hidden />
+  return (
+    <span
+      aria-hidden
+      className={`size-2 rounded-full ${
+        status === 'succeeded' ? 'bg-ink' : status === 'failed' ? 'bg-danger' : 'bg-line-strong'
+      }`}
+    />
   )
 }
 

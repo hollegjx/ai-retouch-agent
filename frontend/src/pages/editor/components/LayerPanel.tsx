@@ -40,9 +40,9 @@ export default function LayerPanel({
   const onlyToWall = wallOnly(session.document)
 
   return (
-    <aside className="border-line bg-paper scrollbar-slim h-full w-full shrink-0 overflow-y-auto border-l">
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-paper p-3">
-        <h2 className="text-base font-semibold">属性与图层</h2>
+    <aside className="bg-paper scrollbar-slim h-full w-full shrink-0 overflow-y-auto border-l border-[var(--hairline)]">
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--hairline)] bg-[var(--glass-strong)] px-5 py-3 backdrop-blur-xl">
+        <h2 className="text-[17px] font-semibold tracking-[-0.02em]">属性与图层</h2>
         <Button size="sm" onClick={() => closePanel(null)}>
           关闭
         </Button>
@@ -84,7 +84,7 @@ export default function LayerPanel({
       )}
 
       <Section title="图层">
-        <label className="text-muted mb-2 flex items-center gap-2 text-xs">
+        <label className="text-muted mb-3 flex items-center gap-2 text-xs">
           <input
             type="checkbox"
             checked={includeText}
@@ -93,7 +93,7 @@ export default function LayerPanel({
           />
           同时拆出文字
         </label>
-        <div className="mb-3 flex gap-1">
+        <div className="mb-3 flex gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -206,7 +206,7 @@ export default function LayerPanel({
             onRetry={() => void historyQuery.refetch()}
           />
         ) : history.length === 0 ? (
-          <p className="text-faint text-xs">暂无记录</p>
+          <p className="text-muted text-xs">暂无记录</p>
         ) : (
           <ol className="space-y-2">
             {history.map((entry) => (

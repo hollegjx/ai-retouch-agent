@@ -11,8 +11,7 @@ const RATIOS: { value: Ratio; label: string }[] = [
   { value: '16:9', label: '16:9' },
 ]
 
-const FIELD =
-  'border-line text-ink placeholder:text-faint rounded-control focus:border-line-strong w-full resize-none border px-3 py-2 text-xs leading-relaxed outline-none transition-colors duration-[160ms]'
+const FIELD = 'form-field form-field-sm resize-none leading-relaxed'
 
 export function BackgroundForm({
   disabled,
@@ -28,9 +27,9 @@ export function BackgroundForm({
   const ready = prompt.trim().length > 0
 
   return (
-    <section className="border-line border-b px-4 py-4">
-      <h2 className="text-muted mb-3 text-xs font-medium">换背景</h2>
-      <p className="text-faint mb-3 text-xs leading-relaxed">
+    <section className="animate-fade-in border-b border-[var(--hairline)] px-5 py-5">
+      <h2 className="text-ink mb-2 text-[15px] font-semibold tracking-[-0.015em]">换背景</h2>
+      <p className="text-muted mb-3 text-xs leading-relaxed">
         {wallOnly
           ? '写出新背景。已拆层，结果拍平成整图只进图片墙，点选采用；画布与图层保持不变。'
           : '写出新背景。一张直接上画布；多张进图片墙，点选采用。'}
@@ -86,9 +85,9 @@ export function ExpandForm({
   const [ratio, setRatio] = useState<Ratio>('16:9')
 
   return (
-    <section className="border-line border-b px-4 py-4">
-      <h2 className="text-muted mb-3 text-xs font-medium">扩图</h2>
-      <p className="text-faint mb-3 text-xs leading-relaxed">
+    <section className="animate-fade-in border-b border-[var(--hairline)] px-5 py-5">
+      <h2 className="text-ink mb-2 text-[15px] font-semibold tracking-[-0.015em]">扩图</h2>
+      <p className="text-muted mb-3 text-xs leading-relaxed">
         {wallOnly
           ? '扩展到目标比例，主体保留在画面中。已拆层，结果只进图片墙，点选采用；画布与图层保持不变。'
           : '扩展到目标比例，主体保留在画面中，完成后写回画布。'}
@@ -132,9 +131,9 @@ export function ReplaceForm({
   const ready = prompt.trim().length > 0
 
   return (
-    <section className="border-line border-b px-4 py-4">
-      <h2 className="text-muted mb-3 text-xs font-medium">局部替换</h2>
-      <p className="text-faint mb-3 text-xs leading-relaxed">
+    <section className="animate-fade-in border-b border-[var(--hairline)] px-5 py-5">
+      <h2 className="text-ink mb-2 text-[15px] font-semibold tracking-[-0.015em]">局部替换</h2>
+      <p className="text-muted mb-3 text-xs leading-relaxed">
         只改当前选区。选区外的画面会保持不动。
       </p>
       <textarea
