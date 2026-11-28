@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 from app.config import get_settings
 from app.tools import SPECS, ToolSpec
 
-# 图像模型必须走 DashScope 原生接口，纯文本的规划模型可用 OpenAI 兼容模式
+# 百炼的图像模型必须走原生接口，纯文本的规划模型可用 OpenAI 兼容模式
 _COMPATIBLE_PATH = "/compatible-mode/v1"
 
 
@@ -32,13 +32,20 @@ def _schema_of(spec: ToolSpec) -> dict:
 def planner():
     """绑定全部已注册工具的规划模型。工具增减无需改动此处。"""
     settings = get_settings()
-    if not settings.dashscope_api_key:
-        raise PlannerUnavailable("未配置 DASHSCOPE_API_KEY，对话指令不可用")
+    if settings.planner_provider == "openai":
+        api_key, base_url = settings.openai_api_key, settings.openai_base_url
+        missing = "OPENAI_API_KEY 或 OPENAI_BASE_URL"
+    else:
+        api_key = settings.dashscope_api_key
+        base_url = f"{settings.dashscope_base_url}{_COMPATIBLE_PATH}"
+        missing = "DASHSCOPE_API_KEY"
+    if not api_key or not base_url:
+        raise PlannerUnavailable(f"未配置 {missing}，对话指令不可用")
 
     model = ChatOpenAI(
         model=settings.planner_model,
-        api_key=settings.dashscope_api_key,
-        base_url=f"{settings.dashscope_base_url}{_COMPATIBLE_PATH}",
+        api_key=api_key,
+        base_url=base_url,
         temperature=0,
     )
     return model.bind_tools([_schema_of(spec) for spec in SPECS])

@@ -26,7 +26,7 @@
 - Docker >= 20（含 Compose）
 - Python >= 3.13
 - Node.js `^20.19.0 || >=22.12.0`（与当前 Vite 版本一致）
-- 真实模型调用所需的 `DASHSCOPE_API_KEY`；AI 对话也需要此配置。
+- 真实模型调用所需的密钥：百炼的 `DASHSCOPE_API_KEY`，或 OpenAI 兼容接口的 `OPENAI_API_KEY`（二选一）；AI 对话也需要。
 
 ### 1. 准备配置
 
@@ -36,7 +36,12 @@
 cp -n .env.example .env
 ```
 
-`IMAGE_PROVIDER=mock` 使用本地占位图；真实生图和图像编辑使用 `dashscope`，并填写 `DASHSCOPE_API_KEY`。后端从项目根目录的 `.env` 读取配置。
+`IMAGE_PROVIDER=mock` 使用本地占位图。真实生图和图像编辑有两种接法：
+
+- `dashscope`：百炼千问图像模型，填写 `DASHSCOPE_API_KEY`。
+- `openai`：任何 OpenAI 兼容的图像接口（`/images/generations`、`/images/edits`），包括各类兼容网关；填写 `OPENAI_API_KEY`、`OPENAI_BASE_URL` 和 `OPENAI_IMAGE_MODEL`。网关可能忽略 `n` 和画幅参数，后端会逐张并发请求，并把结果居中裁切到目标尺寸。
+
+AI 对话的规划模型由 `PLANNER_PROVIDER` 决定：`dashscope` 走百炼兼容模式，`openai` 复用上面的 OpenAI 兼容地址和密钥；模型名填在 `PLANNER_MODEL`。后端从项目根目录的 `.env` 读取配置。
 
 ### 2. 启动中间件
 

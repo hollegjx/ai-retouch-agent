@@ -30,13 +30,20 @@ class Settings(BaseSettings):
     jwt_secret: str = "dev-only-secret-please-change-in-production"
     jwt_ttl_hours: int = 24
 
-    # image provider: mock | dashscope
+    # image provider: mock | dashscope | openai
     image_provider: str = "mock"
     dashscope_api_key: str = ""
     # 业务空间专属域名为 https://{WorkspaceId}.cn-beijing.maas.aliyuncs.com
     dashscope_base_url: str = "https://dashscope.aliyuncs.com"
     text_to_image_model: str = "qwen-image-3.0-pro"
     image_edit_model: str = "qwen-image-edit-max"
+    # openai：OpenAI 兼容的图像接口（/images/generations、/images/edits），也可指向兼容网关
+    openai_api_key: str = ""
+    # 含 /v1 的接口地址，必须显式配置
+    openai_base_url: str = ""
+    openai_image_model: str = "gpt-image-1"
+    # 规划模型走哪家：dashscope 用百炼兼容模式；openai 用上面的地址和密钥
+    planner_provider: str = "dashscope"
     planner_model: str = "qwen-plus"
     # auto：有 rembg 用 rembg，否则四角抠图；测试强制 corner 以免下载模型
     matting_provider: str = "auto"
