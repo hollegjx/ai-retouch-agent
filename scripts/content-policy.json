@@ -33,7 +33,15 @@
     "https://astral.sh/uv/install.sh",
     "https://astral.sh/uv/install.ps1",
     "https://pypi.tuna.tsinghua.edu.cn/simple",
-    "https://registry.npmmirror.com"
+    "https://registry.npmmirror.com",
+    "https://img.shields.io/badge/fastapi-1d1d1f?style=flat-square&logo=fastapi&logocolor=white",
+    "https://img.shields.io/badge/postgresql-1d1d1f?style=flat-square&logo=postgresql&logocolor=white",
+    "https://img.shields.io/badge/python-3.13-1d1d1f?style=flat-square&logo=python&logocolor=white",
+    "https://img.shields.io/badge/react-1d1d1f?style=flat-square&logo=react&logocolor=white",
+    "https://img.shields.io/badge/typescript-1d1d1f?style=flat-square&logo=typescript&logocolor=white",
+    "https://img.shields.io/badge/license-mit-1d1d1f?style=flat-square",
+    "https://img.shields.io/badge/live-retouch.xiaoxy.com-1d1d1f?style=flat-square",
+    "https://retouch.xiaoxy.com/"
   ],
   "allowedBundleUrls": [
     "http://localhost",
@@ -57,6 +65,14 @@
     "backend/app/eval/dataset/images/product-white.png": "bb4d28230e31246825bb45abb7b142c3b5ac20c4742a6f0e30f8bab95421de06",
     "backend/app/eval/dataset/images/product.png": "9eebc11d4e728cb5716ee5e524e4363ad1697755a57882389c4fd504ec51ee0b",
     "backend/app/eval/dataset/expect/product-alpha.png": "cd5ac47dba40d9a22905d99364e4be39f50a30fb8c614ee007458d8e321d30fd",
-    "backend/app/eval/dataset/expect/product-bright.png": "c9470f1d668805d908a009dc5f0528f1e0f5b4e95425e491b4f869ee33495ba4"
+    "backend/app/eval/dataset/expect/product-bright.png": "c9470f1d668805d908a009dc5f0528f1e0f5b4e95425e491b4f869ee33495ba4",
+    "docs/images/batch.jpg": "3f3558734546d962a0710b8fd59ac667facb535a4311023f72cafa6cea8575d8",
+    "docs/images/candidates.jpg": "352b37798354ec940198aa3074a71f5db74979d9ad8554b316099dbaa4731012",
+    "docs/images/create.jpg": "ac3a766ab99916be212e1b2dbb3e1aaaa504b65afd12045f568fa12208da4ce0",
+    "docs/images/demo.gif": "382539ebb015fe715ed0ae6f70421b100f747d3e4f6e19b3192750ad1101a6c7",
+    "docs/images/editor.jpg": "e4d9a2e691b74c5f3060139716d09951e57c8862ad88beb02520373bddf96ad8",
+    "docs/images/marketing.jpg": "670a062f5f02d619aa029cf627555fc8289bf58d189bbd0df2ac28582c02f7ac",
+    "docs/images/mobile-editor.jpg": "5cc37cf66701282641735baecaab19990b870a324fbcee9000b927ac1565817c",
+    "docs/images/mobile-landing.jpg": "6f068b61e99e1a5521cd44f895da6474572a79ba1adf95851ff8caf0a9198906"
   }
 }

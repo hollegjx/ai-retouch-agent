@@ -9,6 +9,8 @@ docs/*
 !docs/spec.md
 !docs/design.md
 !docs/NOTES.md
+!docs/development.md
+!docs/images/
 
 # 用户评测素材
 evals/
